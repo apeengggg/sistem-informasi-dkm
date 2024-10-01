@@ -1,6 +1,162 @@
 <script setup>
+import AddNewUserDrawer from '@/views/apps/user/list/AddNewUserDrawer.vue'
+import { useUserListStore } from '@/views/apps/user/useUserListStore'
+import { avatarText } from '@core/utils/formatters'
+
 const userListStore = useUserListStore()
 const searchQuery = ref('')
+const selectedRole = ref()
+const selectedPlan = ref()
+const selectedStatus = ref()
+const rowPerPage = ref(10)
+const currentPage = ref(1)
+const totalPage = ref(1)
+const totalUsers = ref(0)
+const users = ref([])
+
+// 👉 Fetching users
+const fetchUsers = () => {
+  userListStore.fetchUsers({
+    q: searchQuery.value,
+    status: selectedStatus.value,
+    plan: selectedPlan.value,
+    role: selectedRole.value,
+    perPage: rowPerPage.value,
+    currentPage: currentPage.value,
+  }).then(response => {
+    users.value = response.data.users
+    totalPage.value = response.data.totalPage
+    totalUsers.value = response.data.totalUsers
+  }).catch(error => {
+    console.error(error)
+  })
+}
+
+watchEffect(fetchUsers)
+
+// 👉 watching current page
+watchEffect(() => {
+  if (currentPage.value > totalPage.value)
+    currentPage.value = totalPage.value
+})
+
+// 👉 search filters
+const roles = [
+  {
+    title: 'Admin',
+    value: 'admin',
+  },
+  {
+    title: 'Author',
+    value: 'author',
+  },
+  {
+    title: 'Editor',
+    value: 'editor',
+  },
+  {
+    title: 'Maintainer',
+    value: 'maintainer',
+  },
+  {
+    title: 'Subscriber',
+    value: 'subscriber',
+  },
+]
+
+const plans = [
+  {
+    title: 'Basic',
+    value: 'basic',
+  },
+  {
+    title: 'Company',
+    value: 'company',
+  },
+  {
+    title: 'Enterprise',
+    value: 'enterprise',
+  },
+  {
+    title: 'Team',
+    value: 'team',
+  },
+]
+
+const status = [
+  {
+    title: 'Pending',
+    value: 'pending',
+  },
+  {
+    title: 'Active',
+    value: 'active',
+  },
+  {
+    title: 'Inactive',
+    value: 'inactive',
+  },
+]
+
+const resolveUserRoleVariant = role => {
+  if (role === 'subscriber')
+    return {
+      color: 'warning',
+      icon: 'tabler-user',
+    }
+  if (role === 'author')
+    return {
+      color: 'success',
+      icon: 'tabler-circle-check',
+    }
+  if (role === 'maintainer')
+    return {
+      color: 'primary',
+      icon: 'tabler-chart-pie-2',
+    }
+  if (role === 'editor')
+    return {
+      color: 'info',
+      icon: 'tabler-pencil',
+    }
+  if (role === 'admin')
+    return {
+      color: 'secondary',
+      icon: 'tabler-device-laptop',
+    }
+  
+  return {
+    color: 'primary',
+    icon: 'tabler-user',
+  }
+}
+
+const resolveUserStatusVariant = stat => {
+  if (stat === 'pending')
+    return 'warning'
+  if (stat === 'active')
+    return 'success'
+  if (stat === 'inactive')
+    return 'secondary'
+  
+  return 'primary'
+}
+
+const isAddNewUserDrawerVisible = ref(false)
+
+// 👉 watching current page
+watchEffect(() => {
+  if (currentPage.value > totalPage.value)
+    currentPage.value = totalPage.value
+})
+
+// 👉 Computing pagination data
+const paginationData = computed(() => {
+  const firstIndex = users.value.length ? (currentPage.value - 1) * rowPerPage.value + 1 : 0
+  const lastIndex = users.value.length + (currentPage.value - 1) * rowPerPage.value
+  
+  return `Showing ${ firstIndex } to ${ lastIndex } of ${ totalUsers.value } entries`
+})
 
 const addNewUser = userData => {
   userListStore.addUser(userData)
@@ -8,13 +164,49 @@ const addNewUser = userData => {
   // refetch User
   fetchUsers()
 }
+
+// 👉 List
+const userListMeta = [
+  {
+    icon: 'tabler-user',
+    color: 'primary',
+    title: 'Session',
+    stats: '21,459',
+    percentage: +29,
+    subtitle: 'Total Users',
+  },
+  {
+    icon: 'tabler-user-plus',
+    color: 'error',
+    title: 'Paid Users',
+    stats: '4,567',
+    percentage: +18,
+    subtitle: 'Last week analytics',
+  },
+  {
+    icon: 'tabler-user-check',
+    color: 'success',
+    title: 'Active Users',
+    stats: '19,860',
+    percentage: -14,
+    subtitle: 'Last week analytics',
+  },
+  {
+    icon: 'tabler-user-exclamation',
+    color: 'warning',
+    title: 'Pending Users',
+    stats: '237',
+    percentage: +42,
+    subtitle: 'Last week analytics',
+  },
+]
 </script>
 
 <template>
   <section>
     <VRow>
       <VCol
-        v-for="meta in this.userListMeta"
+        v-for="meta in userListMeta"
         :key="meta.title"
         cols="12"
         sm="6"
@@ -44,41 +236,32 @@ const addNewUser = userData => {
       </VCol>
 
       <VCol cols="12">
-        <VCard title="List Users">
+        <VCard title="Search Filter">
           <!-- 👉 Filters -->
           <VCardText>
             <VRow>
-              <VCol
-                cols="12"
-                sm="4"
-              >
-              <VTextField
-                  v-model="searchQuery"
-                  label="Name"
-                  placeholder="Name"
-                  density="compact"
-                />
-              </VCol>
-              <VCol
-                cols="12"
-                sm="4"
-              >
-              <VTextField
-                  v-model="searchQuery"
-                  label="Email"
-                  placeholder="Email"
-                  density="compact"
-                />
-              </VCol>
               <!-- 👉 Select Role -->
               <VCol
                 cols="12"
                 sm="4"
               >
                 <VSelect
-                  v-model="this.selectedRole"
+                  v-model="selectedRole"
                   label="Select Role"
                   :items="roles"
+                  clearable
+                  clear-icon="tabler-x"
+                />
+              </VCol>
+              <!-- 👉 Select Plan -->
+              <VCol
+                cols="12"
+                sm="4"
+              >
+                <VSelect
+                  v-model="selectedPlan"
+                  label="Select Plan"
+                  :items="plans"
                   clearable
                   clear-icon="tabler-x"
                 />
@@ -107,7 +290,7 @@ const addNewUser = userData => {
               style="width: 80px;"
             >
               <VSelect
-                v-model="this.page.pageSize"
+                v-model="rowPerPage"
                 density="compact"
                 variant="outlined"
                 :items="[10, 20, 30, 50]"
@@ -119,6 +302,11 @@ const addNewUser = userData => {
             <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
               <!-- 👉 Search  -->
               <div style="width: 10rem;">
+                <VTextField
+                  v-model="searchQuery"
+                  placeholder="Search"
+                  density="compact"
+                />
               </div>
 
               <!-- 👉 Export button -->
@@ -133,7 +321,7 @@ const addNewUser = userData => {
               <!-- 👉 Add user button -->
               <VBtn
                 prepend-icon="tabler-plus"
-                @click="this.isAddNewUserDrawerVisible = true"
+                @click="isAddNewUserDrawerVisible = true"
               >
                 Add New User
               </VBtn>
@@ -147,10 +335,16 @@ const addNewUser = userData => {
             <thead>
               <tr>
                 <th scope="col">
-                  NAME
+                  USER
                 </th>
                 <th scope="col">
                   ROLE
+                </th>
+                <th scope="col">
+                  PLAN
+                </th>
+                <th scope="col">
+                  BILLING
                 </th>
                 <th scope="col">
                   STATUS
@@ -163,8 +357,8 @@ const addNewUser = userData => {
             <!-- 👉 table body -->
             <tbody>
               <tr
-                v-for="user in this.data"
-                :key="user.user_id"
+                v-for="user in users"
+                :key="user.id"
                 style="height: 3.75rem;"
               >
                 <!-- 👉 User -->
@@ -172,27 +366,27 @@ const addNewUser = userData => {
                   <div class="d-flex align-center">
                     <VAvatar
                       variant="tonal"
-                      :color="resolveUserRoleVariant(user.role_name).color"
+                      :color="resolveUserRoleVariant(user.role).color"
                       class="me-3"
                       size="38"
                     >
                       <VImg
-                        v-if="user.photo"
-                        :src="resolveUserAvatar(user.photo)"
+                        v-if="user.avatar"
+                        :src="user.avatar"
                       />
-                      <span v-else>{{ avatarText(user.name) }}</span>
+                      <span v-else>{{ avatarText(user.fullName) }}</span>
                     </VAvatar>
 
                     <div class="d-flex flex-column">
                       <h6 class="text-base">
                         <RouterLink
-                          :to="{ name: 'apps-user-view-id', params: { id: user.user_id } }"
+                          :to="{ name: 'apps-user-view-id', params: { id: user.id } }"
                           class="font-weight-medium user-list-name"
                         >
-                          {{ user.name }}
+                          {{ user.fullName }}
                         </RouterLink>
                       </h6>
-                      <span class="text-sm text-disabled">{{ user.email }}</span>
+                      <span class="text-sm text-disabled">@{{ user.email }}</span>
                     </div>
                   </div>
                 </td>
@@ -200,13 +394,23 @@ const addNewUser = userData => {
                 <!-- 👉 Role -->
                 <td>
                   <VAvatar
-                    :color="resolveUserRoleVariant(user.role_name).color"
-                    :icon="resolveUserRoleVariant(user.role_name).icon"
+                    :color="resolveUserRoleVariant(user.role).color"
+                    :icon="resolveUserRoleVariant(user.role).icon"
                     variant="tonal"
                     size="30"
                     class="me-4"
                   />
-                  <span class="text-capitalize text-base">{{ user.role_name }}</span>
+                  <span class="text-capitalize text-base">{{ user.role }}</span>
+                </td>
+
+                <!-- 👉 Plan -->
+                <td>
+                  <span class="text-capitalize text-base font-weight-semibold">{{ user.currentPlan }}</span>
+                </td>
+
+                <!-- 👉 Billing -->
+                <td>
+                  <span class="text-base">{{ user.billing }}</span>
                 </td>
 
                 <!-- 👉 Status -->
@@ -217,7 +421,7 @@ const addNewUser = userData => {
                     size="small"
                     class="text-capitalize"
                   >
-                    {{ user.status == 1 ? 'Active' : 'Inactive'}}
+                    {{ user.status }}
                   </VChip>
                 </td>
 
@@ -265,7 +469,7 @@ const addNewUser = userData => {
                       <VList>
                         <VListItem
                           title="View"
-                          :to="{ name: 'apps-user-view-id', params: { id: user.user_id } }"
+                          :to="{ name: 'apps-user-view-id', params: { id: user.id } }"
                         />
                         <VListItem
                           title="Suspend"
@@ -279,7 +483,7 @@ const addNewUser = userData => {
             </tbody>
 
             <!-- 👉 table footer  -->
-            <tfoot v-show="!this.data.length">
+            <tfoot v-show="!users.length">
               <tr>
                 <td
                   colspan="7"
@@ -299,10 +503,10 @@ const addNewUser = userData => {
             </span>
 
             <VPagination
-              v-model="this.page.pageNo"
+              v-model="currentPage"
               size="small"
-              :total-visible="11"
-              :length="this.page.totalPages"
+              :total-visible="5"
+              :length="totalPage"
             />
           </VCardText>
         </VCard>
@@ -311,212 +515,11 @@ const addNewUser = userData => {
 
     <!-- 👉 Add New User -->
     <AddNewUserDrawer
-      v-model:isDrawerOpen="this.isAddNewUserDrawerVisible"
+      v-model:isDrawerOpen="isAddNewUserDrawerVisible"
       @user-data="addNewUser"
     />
   </section>
 </template>
-
-<script>
-  // import lib ...
-  // import api from "@/apis/CommonAPI"
-  import api from "@/apis/CommonAPI"
-  import AddNewUserDrawer from '@/views/apps/user/list/AddNewUserDrawer.vue'
-  import { useUserListStore } from '@/views/apps/user/useUserListStore'
-  import { avatarText } from '@core/utils/formatters'
-
-  export default {
-    components: {
-      
-    },
-    mounted(){
-      this.getUsers(1)
-    },
-    data(){
-      return {
-        selectedStatus: 1,
-        loading: false,
-        data: [],
-        infoMessage: '',
-        warningMessage: '',
-        errorMessage: '',
-        page: {
-          totalRecords: 0,
-          totalPages: 0,
-          pageNo: 1,
-          pageSize: 10
-        },
-        orderBy: 'user_id',
-        dir: 'asc',
-        userListMeta: [
-          {
-            icon: 'tabler-user',
-            color: 'primary',
-            title: 'Session',
-            stats: '21,459',
-            percentage: +29,
-            subtitle: 'Total Users',
-          },
-          {
-            icon: 'tabler-user-plus',
-            color: 'error',
-            title: 'Paid Users',
-            stats: '4,567',
-            percentage: +18,
-            subtitle: 'Last week analytics',
-          },
-          {
-            icon: 'tabler-user-check',
-            color: 'success',
-            title: 'Active Users',
-            stats: '19,860',
-            percentage: -14,
-            subtitle: 'Last week analytics',
-          },
-          {
-            icon: 'tabler-user-exclamation',
-            color: 'warning',
-            title: 'Pending Users',
-            stats: '237',
-            percentage: +42,
-            subtitle: 'Last week analytics',
-          },
-        ],
-        isAddNewUserDrawerVisible: false,
-        status: [
-          {
-            title: 'Active',
-            value: 1,
-          },
-          {
-            title: 'Inactive',
-            value: 0,
-          },
-        ],
-        roles: [
-          {
-            title: 'Admin',
-            value: 'admin',
-          },
-          {
-            title: 'Author',
-            value: 'author',
-          },
-          {
-            title: 'Editor',
-            value: 'editor',
-          },
-          {
-            title: 'Maintainer',
-            value: 'maintainer',
-          },
-          {
-            title: 'Subscriber',
-            value: 'subscriber',
-          },
-        ]
-      }
-    },
-    watch: {
-      'page.pageNo'() {
-          if (this.page.pageNo > this.page.totalPages){
-              this.page.pageNo = this.page.totalPages
-          }
-          this.getUsers(this.page.pageNo)
-      },
-      'page.pageSize'(){
-        this.getUsers(this.page.pageNo)
-      },
-      'selectedStatus'(){
-        this.getUsers(this.page.pageNo)
-      }
-    },
-    computed: {
-      paginationData(){
-        const firstIndex = this.data.length ? (this.page.pageNo - 1) * this.page.pageSize + 1 : 0
-        const lastIndex = this.data.length + (this.page.pageNo - 1) * this.page.pageSize
-  
-        return `Showing ${ firstIndex } to ${ lastIndex } of ${ this.data.length } entries`
-      }
-    },
-    methods: {
-      async getUsers(page){
-        this.loadingTable = true
-          let param = `orderBy=${this.orderBy}&dir=${this.dir}&perPage=${this.page.pageSize}&page=${page}&status=${this.selectedStatus == null ? 1 : this.selectedStatus}`
-
-          let uri = `/api/v1/users?${param}`;
-          let responseBody = await api.jsonApi(uri,'GET');
-          console.log("🚀 ~ getUsers ~ responseBody:", responseBody)
-          if( responseBody.status != 200 ){
-            this.infoMessage = '';
-            this.warningMessage = '';
-            this.errorMessage = responseBody.message;
-          }else{
-            this.data = responseBody.data.data;
-            console.log("🚀 ~ getUsers ~ this.data:", this.data)
-
-            this.page.totalRecords= responseBody.data.total
-            this.page.totalPages= responseBody.data.last_page
-            this.page.pageNo= responseBody.data.current_page
-            this.page.pageSize= ''+responseBody.data.per_page
-            if(responseBody.data.data.length<=0){
-                this.infoMessage = ''
-                this.warningMessage = 'Data not found'
-            }else{
-                this.infoMessage = ''
-                this.warningMessage = ''
-            }
-            this.errorMessage = ''
-
-          }
-          this.loading = false
-      },
-      resolveUserAvatar(path){
-        console.log('http://localhost:8000/storage/'+path)
-        return 'http://localhost:8000/storage/'+path
-      },
-      resolveUserRoleVariant(role){
-        if (role.toLowerCase() === 'subscriber')
-          return {
-            color: 'warning',
-            icon: 'tabler-user',
-          }
-        if (role.toLowerCase() === 'author')
-          return {
-            color: 'success',
-            icon: 'tabler-circle-check',
-          }
-        if (role.toLowerCase() === 'maintainer')
-          return {
-            color: 'primary',
-            icon: 'tabler-chart-pie-2',
-          }
-        if (role.toLowerCase() === 'editor')
-          return {
-            color: 'info',
-            icon: 'tabler-pencil',
-          }
-        if (role.toLowerCase() === 'admin')
-          return {
-            color: 'secondary',
-            icon: 'tabler-device-laptop',
-          }
-        
-        return {
-          color: 'primary',
-          icon: 'tabler-user',
-        }
-      },
-      resolveUserStatusVariant(stat){
-        if(stat == 1){
-          return 'success'
-        }
-        
-        return 'danger'
-      }
-    },
-  }
-</script>
 
 <style lang="scss">
 .app-user-search-filter {
