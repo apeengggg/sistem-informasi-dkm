@@ -242,6 +242,7 @@ const addNewUser = userData => {
                     size="x-small"
                     color="default"
                     variant="text"
+                    @click="doDelete(user.user_id)"
                   >
                     <VIcon
                       size="22"
@@ -317,19 +318,18 @@ const addNewUser = userData => {
 </template>
 
 <script>
-  // import lib ...
-  // import api from "@/apis/CommonAPI"
   import api from "@/apis/CommonAPI"
   import AddNewUserDrawer from '@/views/apps/user/list/AddNewUserDrawer.vue'
   import { useUserListStore } from '@/views/apps/user/useUserListStore'
   import { avatarText } from '@core/utils/formatters'
+  import Swal from 'sweetalert2'
 
   export default {
     components: {
       
     },
     mounted(){
-      this.getUsers(1)
+      this.doSearch(1)
     },
     data(){
       return {
@@ -412,15 +412,13 @@ const addNewUser = userData => {
           if (this.page.pageNo > this.page.totalPages){
               this.page.pageNo = this.page.totalPages
           }
-          console.log('watch pageNo')
-          this.getUsers(this.page.pageNo)
+          this.doSearch(this.page.pageNo)
         },
         'page.pageSize'(){
-        console.log('watch pageSize')
-        this.getUsers(this.page.pageNo)
+        this.doSearch(this.page.pageNo)
       },
       'selectedStatus'(){
-        this.getUsers(this.page.pageNo)
+        this.doSearch(this.page.pageNo)
       }
     },
     computed: {
@@ -432,13 +430,13 @@ const addNewUser = userData => {
       }
     },
     methods: {
-      async getUsers(page){
-        this.loadingTable = true
+      async doSearch(page){
+          this.loading = true
           let param = `orderBy=${this.orderBy}&dir=${this.dir}&perPage=${this.page.pageSize}&page=${page}&status=${this.selectedStatus == null ? 1 : this.selectedStatus}`
 
           let uri = `/api/v1/users?${param}`;
           let responseBody = await api.jsonApi(uri,'GET');
-          // console.log("🚀 ~ getUsers ~ responseBody:", responseBody)
+          // console.log("🚀 ~ doSearch ~ responseBody:", responseBody)
           if( responseBody.status != 200 ){
             this.infoMessage = '';
             this.warningMessage = '';
@@ -446,7 +444,7 @@ const addNewUser = userData => {
           }else{
             await this.resolveMetaUsers(responseBody.meta_users)
             this.data = responseBody.data.data;
-            // console.log("🚀 ~ getUsers ~ this.data:", this.data)
+            // console.log("🚀 ~ doSearch ~ this.data:", this.data)
 
             this.page.totalRecords= responseBody.data.total
             this.page.totalPages= responseBody.data.last_page
@@ -463,6 +461,38 @@ const addNewUser = userData => {
 
           }
           this.loading = false
+      },
+      async doDelete(user_id){
+        Swal.fire({
+          title: "Are you sure?",
+          text: "You won't be able to revert this!",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#7367F0",
+          cancelButtonColor: "#EA5455",
+          confirmButtonText: "Yes, delete it!",
+          customClass: {
+            confirmButton: 'confirm-button-text-white',
+            cancelButton: 'confirm-button-text-white'
+          }
+      }).then(async (result) => {
+          if (result.isConfirmed) {
+            this.loading = true
+            let uri = `/api/v1/users`;
+            let responseBody = await api.jsonApi(uri,'DELETE',JSON.stringify({userId: user_id}));
+            
+            if( responseBody.status != 200 ){
+              this.infoMessage = '';
+              this.warningMessage = '';
+              this.errorMessage = responseBody.message;
+            }else{
+              console.log("🚀 ~ doDelete ~ responseBody:", responseBody)
+            }
+            this.loading = false
+            this.doSearch(1)
+          }
+        })
+          
       },
       resolveMetaUsers(data){
         this.userListMeta.forEach(obj => {
@@ -559,5 +589,9 @@ const addNewUser = userData => {
 
 .user-list-name:not(:hover) {
   color: rgba(var(--v-theme-on-background), var(--v-high-emphasis-opacity));
+}
+
+.confirm-button-text-white {
+    color: white !important;
 }
 </style>

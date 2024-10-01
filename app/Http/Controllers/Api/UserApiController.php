@@ -139,12 +139,12 @@ class UserApiController extends Controller
                 return ResponseUtil::BadRequest('Phone Number is Not Valid');
             }
 
-            // $validateEmailPhoneNip = Users::getUserFromEmailPhoneNip($request->email, $request->phone, $request->nip);
+            // $validateEmailPhoneNip = MUsers::getUserFromEmailPhoneNip($request->email, $request->phone, $request->nip);
             // if($validateEmailPhoneNip){
             //     return ResponseUtil::BadRequest('Bad Request');
             // }
 
-            // $validateRoleId = Users::getRoleFromRoleId($request->role_id);
+            // $validateRoleId = MUsers::getRoleFromRoleId($request->role_id);
             // if($validateRoleId){
             //     return ResponseUtil::BadRequest('Bad Request');
             // }
@@ -226,12 +226,12 @@ class UserApiController extends Controller
                 return ResponseUtil::BadRequest('You cant delete your own account');
             }
             
-            $get_user = Users::getUserFromUserId($request->userId);
+            $get_user = MUsers::getUserFromUserId($request->userId);
             if(!$get_user){
                 return ResponseUtil::BadRequest('Bad Request');
             }
             
-            Users::deleteUser($request->userId, $request->attributes->get('user_id'));
+            MUsers::deleteUser($request->userId, $request->attributes->get('user_id'));
             return ResponseUtil::Ok('Successfully Deleted', null);
         }catch(\Exception $e){
             return ResponseUtil::InternalServerError($e);
