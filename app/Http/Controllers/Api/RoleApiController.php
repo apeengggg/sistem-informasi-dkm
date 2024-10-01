@@ -6,13 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Utils\ResponseUtil;
 use App\Models\MUsers;
-use App\Models\MRoles;
 use App\Utils\StringUtil;
 use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Uuid;
 use Illuminate\Support\Facades\Storage;
 
-class UserApiController extends Controller
+class RoleApiController extends Controller
 {
     /**
      * Display a listing of the resource.

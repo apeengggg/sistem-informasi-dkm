@@ -94,4 +94,18 @@ class MUsers extends Model
 
         return $query;
     }
+
+    public static function getMetaUsers(){
+        $totalUsers = DB::table('m_users')->count(); // Total users with status 1 or 0
+        $activeUsers = DB::table('m_users')->where('status', 1)->count(); // Users with status 1
+        $inactiveUsers = DB::table('m_users')->where('status', 0)->count(); // Users with status 0
+
+        return [
+            'meta_users' => [
+                'total_users' => $totalUsers,
+                'active_users' => $activeUsers,
+                'inactive_users' => $inactiveUsers
+            ]
+        ];
+    }
 }

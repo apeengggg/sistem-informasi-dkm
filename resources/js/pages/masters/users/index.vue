@@ -28,7 +28,6 @@ const addNewUser = userData => {
                 <h6 class="text-h6">
                   {{ meta.stats }}
                 </h6>
-                <span :class="meta.percentage > 0 ? 'text-success' : 'text-error'">({{ meta.percentage }}%)</span>
               </div>
               <span>{{ meta.subtitle }}</span>
             </div>
@@ -53,7 +52,7 @@ const addNewUser = userData => {
                 sm="4"
               >
               <VTextField
-                  v-model="searchQuery"
+                  v-model="param_query.name"
                   label="Name"
                   placeholder="Name"
                   density="compact"
@@ -64,7 +63,7 @@ const addNewUser = userData => {
                 sm="4"
               >
               <VTextField
-                  v-model="searchQuery"
+                  v-model="param_query.email"
                   label="Email"
                   placeholder="Email"
                   density="compact"
@@ -76,7 +75,7 @@ const addNewUser = userData => {
                 sm="4"
               >
                 <VSelect
-                  v-model="this.selectedRole"
+                  v-model="param_query.roleId"
                   label="Select Role"
                   :items="roles"
                   clearable
@@ -334,6 +333,11 @@ const addNewUser = userData => {
     },
     data(){
       return {
+        param_query: {
+          name: '',
+          email: '',
+          roleId: ''
+        },
         selectedStatus: 1,
         loading: false,
         data: [],
@@ -349,37 +353,23 @@ const addNewUser = userData => {
         orderBy: 'user_id',
         dir: 'asc',
         userListMeta: [
-          {
+        {
             icon: 'tabler-user',
             color: 'primary',
-            title: 'Session',
-            stats: '21,459',
-            percentage: +29,
-            subtitle: 'Total Users',
-          },
-          {
-            icon: 'tabler-user-plus',
-            color: 'error',
-            title: 'Paid Users',
-            stats: '4,567',
-            percentage: +18,
-            subtitle: 'Last week analytics',
+            title: 'Total Users',
+            stats: 0,
           },
           {
             icon: 'tabler-user-check',
             color: 'success',
             title: 'Active Users',
-            stats: '19,860',
-            percentage: -14,
-            subtitle: 'Last week analytics',
+            stats: 0,
           },
           {
-            icon: 'tabler-user-exclamation',
-            color: 'warning',
-            title: 'Pending Users',
-            stats: '237',
-            percentage: +42,
-            subtitle: 'Last week analytics',
+            icon: 'tabler-user-x',
+            color: 'danger',
+            title: 'Inactive Users',
+            stats: 0,
           },
         ],
         isAddNewUserDrawerVisible: false,
@@ -422,9 +412,11 @@ const addNewUser = userData => {
           if (this.page.pageNo > this.page.totalPages){
               this.page.pageNo = this.page.totalPages
           }
+          console.log('watch pageNo')
           this.getUsers(this.page.pageNo)
-      },
-      'page.pageSize'(){
+        },
+        'page.pageSize'(){
+        console.log('watch pageSize')
         this.getUsers(this.page.pageNo)
       },
       'selectedStatus'(){
@@ -446,19 +438,20 @@ const addNewUser = userData => {
 
           let uri = `/api/v1/users?${param}`;
           let responseBody = await api.jsonApi(uri,'GET');
-          console.log("🚀 ~ getUsers ~ responseBody:", responseBody)
+          // console.log("🚀 ~ getUsers ~ responseBody:", responseBody)
           if( responseBody.status != 200 ){
             this.infoMessage = '';
             this.warningMessage = '';
             this.errorMessage = responseBody.message;
           }else{
+            await this.resolveMetaUsers(responseBody.meta_users)
             this.data = responseBody.data.data;
-            console.log("🚀 ~ getUsers ~ this.data:", this.data)
+            // console.log("🚀 ~ getUsers ~ this.data:", this.data)
 
             this.page.totalRecords= responseBody.data.total
             this.page.totalPages= responseBody.data.last_page
             this.page.pageNo= responseBody.data.current_page
-            this.page.pageSize= ''+responseBody.data.per_page
+            this.page.pageSize= responseBody.data.per_page
             if(responseBody.data.data.length<=0){
                 this.infoMessage = ''
                 this.warningMessage = 'Data not found'
@@ -471,8 +464,45 @@ const addNewUser = userData => {
           }
           this.loading = false
       },
+      resolveMetaUsers(data){
+        this.userListMeta.forEach(obj => {
+          if(obj.title == 'Total Users'){
+            obj.stats = data.total_users
+          }
+
+          if(obj.title == 'Active Users'){
+            obj.stats = data.active_users
+          }
+
+          if(obj.title == 'Inactive Users'){
+            obj.stats = data.inactive_users
+          }
+        })
+        // const meta = [
+        // {
+        //     icon: 'tabler-user',
+        //     color: 'primary',
+        //     title: 'Total Users',
+        //     stats: data.total_users.toString(),
+        //   },
+        //   {
+        //     icon: 'tabler-user-check',
+        //     color: 'success',
+        //     title: 'Active Users',
+        //     stats: data.active_users.toString(),
+        //   },
+        //   {
+        //     icon: 'tabler-user-x',
+        //     color: 'danger',
+        //     title: 'Inactive Users',
+        //     stats: data.inactive_users.toString(),
+        //   },
+        // ]
+        // console.log(meta)
+        // this.userListMeta.push(meta)
+      },
       resolveUserAvatar(path){
-        console.log('http://localhost:8000/storage/'+path)
+        // console.log('http://localhost:8000/storage/'+path)
         return 'http://localhost:8000/storage/'+path
       },
       resolveUserRoleVariant(role){
