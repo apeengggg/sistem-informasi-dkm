@@ -1,0 +1,533 @@
+<script setup>
+const userListStore = useUserListStore()
+const searchQuery = ref('')
+
+const addNewUser = userData => {
+  userListStore.addUser(userData)
+
+  // refetch User
+  fetchUsers()
+}
+</script>
+
+<template>
+  <section>
+    <VRow>
+      <VCol
+        v-for="meta in this.userListMeta"
+        :key="meta.title"
+        cols="12"
+        sm="6"
+        lg="3"
+      >
+        <VCard>
+          <VCardText class="d-flex justify-space-between">
+            <div>
+              <span>{{ meta.title }}</span>
+              <div class="d-flex align-center gap-2 my-1">
+                <h6 class="text-h6">
+                  {{ meta.stats }}
+                </h6>
+                <span :class="meta.percentage > 0 ? 'text-success' : 'text-error'">({{ meta.percentage }}%)</span>
+              </div>
+              <span>{{ meta.subtitle }}</span>
+            </div>
+
+            <VAvatar
+              rounded
+              variant="tonal"
+              :color="meta.color"
+              :icon="meta.icon"
+            />
+          </VCardText>
+        </VCard>
+      </VCol>
+
+      <VCol cols="12">
+        <VCard title="List Users">
+          <!-- 👉 Filters -->
+          <VCardText>
+            <VRow>
+              <VCol
+                cols="12"
+                sm="4"
+              >
+              <VTextField
+                  v-model="searchQuery"
+                  label="Name"
+                  placeholder="Name"
+                  density="compact"
+                />
+              </VCol>
+              <VCol
+                cols="12"
+                sm="4"
+              >
+              <VTextField
+                  v-model="searchQuery"
+                  label="Email"
+                  placeholder="Email"
+                  density="compact"
+                />
+              </VCol>
+              <!-- 👉 Select Role -->
+              <VCol
+                cols="12"
+                sm="4"
+              >
+                <VSelect
+                  v-model="this.selectedRole"
+                  label="Select Role"
+                  :items="roles"
+                  clearable
+                  clear-icon="tabler-x"
+                />
+              </VCol>
+              <!-- 👉 Select Status -->
+              <VCol
+                cols="12"
+                sm="4"
+              >
+                <VSelect
+                  v-model="selectedStatus"
+                  label="Select Status"
+                  :items="status"
+                  clearable
+                  clear-icon="tabler-x"
+                />
+              </VCol>
+            </VRow>
+          </VCardText>
+
+          <VDivider />
+
+          <VCardText class="d-flex flex-wrap py-4 gap-4">
+            <div
+              class="me-3"
+              style="width: 80px;"
+            >
+              <VSelect
+                v-model="this.page.pageSize"
+                density="compact"
+                variant="outlined"
+                :items="[10, 20, 30, 50]"
+              />
+            </div>
+
+            <VSpacer />
+
+            <div class="app-user-search-filter d-flex align-center flex-wrap gap-4">
+              <!-- 👉 Search  -->
+              <div style="width: 10rem;">
+              </div>
+
+              <!-- 👉 Export button -->
+              <VBtn
+                variant="tonal"
+                color="secondary"
+                prepend-icon="tabler-screen-share"
+              >
+                Export
+              </VBtn>
+
+              <!-- 👉 Add user button -->
+              <VBtn
+                prepend-icon="tabler-plus"
+                @click="this.isAddNewUserDrawerVisible = true"
+              >
+                Add New User
+              </VBtn>
+            </div>
+          </VCardText>
+
+          <VDivider />
+
+          <VTable class="text-no-wrap">
+            <!-- 👉 table head -->
+            <thead>
+              <tr>
+                <th scope="col">
+                  NAME
+                </th>
+                <th scope="col">
+                  ROLE
+                </th>
+                <th scope="col">
+                  STATUS
+                </th>
+                <th scope="col">
+                  ACTIONS
+                </th>
+              </tr>
+            </thead>
+            <!-- 👉 table body -->
+            <tbody>
+              <tr
+                v-for="user in this.data"
+                :key="user.user_id"
+                style="height: 3.75rem;"
+              >
+                <!-- 👉 User -->
+                <td>
+                  <div class="d-flex align-center">
+                    <VAvatar
+                      variant="tonal"
+                      :color="resolveUserRoleVariant(user.role_name).color"
+                      class="me-3"
+                      size="38"
+                    >
+                      <VImg
+                        v-if="user.photo"
+                        :src="resolveUserAvatar(user.photo)"
+                      />
+                      <span v-else>{{ avatarText(user.name) }}</span>
+                    </VAvatar>
+
+                    <div class="d-flex flex-column">
+                      <h6 class="text-base">
+                        <RouterLink
+                          :to="{ name: 'apps-user-view-id', params: { id: user.user_id } }"
+                          class="font-weight-medium user-list-name"
+                        >
+                          {{ user.name }}
+                        </RouterLink>
+                      </h6>
+                      <span class="text-sm text-disabled">{{ user.email }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <!-- 👉 Role -->
+                <td>
+                  <VAvatar
+                    :color="resolveUserRoleVariant(user.role_name).color"
+                    :icon="resolveUserRoleVariant(user.role_name).icon"
+                    variant="tonal"
+                    size="30"
+                    class="me-4"
+                  />
+                  <span class="text-capitalize text-base">{{ user.role_name }}</span>
+                </td>
+
+                <!-- 👉 Status -->
+                <td>
+                  <VChip
+                    label
+                    :color="resolveUserStatusVariant(user.status)"
+                    size="small"
+                    class="text-capitalize"
+                  >
+                    {{ user.status == 1 ? 'Active' : 'Inactive'}}
+                  </VChip>
+                </td>
+
+                <!-- 👉 Actions -->
+                <td
+                  class="text-center"
+                  style="width: 5rem;"
+                >
+                  <VBtn
+                    icon
+                    size="x-small"
+                    color="default"
+                    variant="text"
+                  >
+                    <VIcon
+                      size="22"
+                      icon="tabler-edit"
+                    />
+                  </VBtn>
+
+                  <VBtn
+                    icon
+                    size="x-small"
+                    color="default"
+                    variant="text"
+                  >
+                    <VIcon
+                      size="22"
+                      icon="tabler-trash"
+                    />
+                  </VBtn>
+
+                  <VBtn
+                    icon
+                    size="x-small"
+                    color="default"
+                    variant="text"
+                  >
+                    <VIcon
+                      size="22"
+                      icon="tabler-dots-vertical"
+                    />
+
+                    <VMenu activator="parent">
+                      <VList>
+                        <VListItem
+                          title="View"
+                          :to="{ name: 'apps-user-view-id', params: { id: user.user_id } }"
+                        />
+                        <VListItem
+                          title="Suspend"
+                          href="javascript:void(0)"
+                        />
+                      </VList>
+                    </VMenu>
+                  </VBtn>
+                </td>
+              </tr>
+            </tbody>
+
+            <!-- 👉 table footer  -->
+            <tfoot v-show="!this.data.length">
+              <tr>
+                <td
+                  colspan="7"
+                  class="text-center"
+                >
+                  No data available
+                </td>
+              </tr>
+            </tfoot>
+          </VTable>
+
+          <VDivider />
+
+          <VCardText class="d-flex align-center flex-wrap justify-space-between gap-4 py-3 px-5">
+            <span class="text-sm text-disabled">
+              {{ paginationData }}
+            </span>
+
+            <VPagination
+              v-model="this.page.pageNo"
+              size="small"
+              :total-visible="11"
+              :length="this.page.totalPages"
+            />
+          </VCardText>
+        </VCard>
+      </VCol>
+    </VRow>
+
+    <!-- 👉 Add New User -->
+    <AddNewUserDrawer
+      v-model:isDrawerOpen="this.isAddNewUserDrawerVisible"
+      @user-data="addNewUser"
+    />
+  </section>
+</template>
+
+<script>
+  // import lib ...
+  // import api from "@/apis/CommonAPI"
+  import api from "@/apis/CommonAPI"
+  import AddNewUserDrawer from '@/views/apps/user/list/AddNewUserDrawer.vue'
+  import { useUserListStore } from '@/views/apps/user/useUserListStore'
+  import { avatarText } from '@core/utils/formatters'
+
+  export default {
+    components: {
+      
+    },
+    mounted(){
+      this.getUsers(1)
+    },
+    data(){
+      return {
+        selectedStatus: 1,
+        loading: false,
+        data: [],
+        infoMessage: '',
+        warningMessage: '',
+        errorMessage: '',
+        page: {
+          totalRecords: 0,
+          totalPages: 0,
+          pageNo: 1,
+          pageSize: 10
+        },
+        orderBy: 'user_id',
+        dir: 'asc',
+        userListMeta: [
+          {
+            icon: 'tabler-user',
+            color: 'primary',
+            title: 'Session',
+            stats: '21,459',
+            percentage: +29,
+            subtitle: 'Total Users',
+          },
+          {
+            icon: 'tabler-user-plus',
+            color: 'error',
+            title: 'Paid Users',
+            stats: '4,567',
+            percentage: +18,
+            subtitle: 'Last week analytics',
+          },
+          {
+            icon: 'tabler-user-check',
+            color: 'success',
+            title: 'Active Users',
+            stats: '19,860',
+            percentage: -14,
+            subtitle: 'Last week analytics',
+          },
+          {
+            icon: 'tabler-user-exclamation',
+            color: 'warning',
+            title: 'Pending Users',
+            stats: '237',
+            percentage: +42,
+            subtitle: 'Last week analytics',
+          },
+        ],
+        isAddNewUserDrawerVisible: false,
+        status: [
+          {
+            title: 'Active',
+            value: 1,
+          },
+          {
+            title: 'Inactive',
+            value: 0,
+          },
+        ],
+        roles: [
+          {
+            title: 'Admin',
+            value: 'admin',
+          },
+          {
+            title: 'Author',
+            value: 'author',
+          },
+          {
+            title: 'Editor',
+            value: 'editor',
+          },
+          {
+            title: 'Maintainer',
+            value: 'maintainer',
+          },
+          {
+            title: 'Subscriber',
+            value: 'subscriber',
+          },
+        ]
+      }
+    },
+    watch: {
+      'page.pageNo'() {
+          if (this.page.pageNo > this.page.totalPages){
+              this.page.pageNo = this.page.totalPages
+          }
+          this.getUsers(this.page.pageNo)
+      },
+      'page.pageSize'(){
+        this.getUsers(this.page.pageNo)
+      },
+      'selectedStatus'(){
+        this.getUsers(this.page.pageNo)
+      }
+    },
+    computed: {
+      paginationData(){
+        const firstIndex = this.data.length ? (this.page.pageNo - 1) * this.page.pageSize + 1 : 0
+        const lastIndex = this.data.length + (this.page.pageNo - 1) * this.page.pageSize
+  
+        return `Showing ${ firstIndex } to ${ lastIndex } of ${ this.data.length } entries`
+      }
+    },
+    methods: {
+      async getUsers(page){
+        this.loadingTable = true
+          let param = `orderBy=${this.orderBy}&dir=${this.dir}&perPage=${this.page.pageSize}&page=${page}&status=${this.selectedStatus == null ? 1 : this.selectedStatus}`
+
+          let uri = `/api/v1/users?${param}`;
+          let responseBody = await api.jsonApi(uri,'GET');
+          console.log("🚀 ~ getUsers ~ responseBody:", responseBody)
+          if( responseBody.status != 200 ){
+            this.infoMessage = '';
+            this.warningMessage = '';
+            this.errorMessage = responseBody.message;
+          }else{
+            this.data = responseBody.data.data;
+            console.log("🚀 ~ getUsers ~ this.data:", this.data)
+
+            this.page.totalRecords= responseBody.data.total
+            this.page.totalPages= responseBody.data.last_page
+            this.page.pageNo= responseBody.data.current_page
+            this.page.pageSize= ''+responseBody.data.per_page
+            if(responseBody.data.data.length<=0){
+                this.infoMessage = ''
+                this.warningMessage = 'Data not found'
+            }else{
+                this.infoMessage = ''
+                this.warningMessage = ''
+            }
+            this.errorMessage = ''
+
+          }
+          this.loading = false
+      },
+      resolveUserAvatar(path){
+        console.log('http://localhost:8000/storage/'+path)
+        return 'http://localhost:8000/storage/'+path
+      },
+      resolveUserRoleVariant(role){
+        if (role.toLowerCase() === 'subscriber')
+          return {
+            color: 'warning',
+            icon: 'tabler-user',
+          }
+        if (role.toLowerCase() === 'author')
+          return {
+            color: 'success',
+            icon: 'tabler-circle-check',
+          }
+        if (role.toLowerCase() === 'maintainer')
+          return {
+            color: 'primary',
+            icon: 'tabler-chart-pie-2',
+          }
+        if (role.toLowerCase() === 'editor')
+          return {
+            color: 'info',
+            icon: 'tabler-pencil',
+          }
+        if (role.toLowerCase() === 'admin')
+          return {
+            color: 'secondary',
+            icon: 'tabler-device-laptop',
+          }
+        
+        return {
+          color: 'primary',
+          icon: 'tabler-user',
+        }
+      },
+      resolveUserStatusVariant(stat){
+        if(stat == 1){
+          return 'success'
+        }
+        
+        return 'danger'
+      }
+    },
+  }
+</script>
+
+<style lang="scss">
+.app-user-search-filter {
+  inline-size: 31.6rem;
+}
+
+.text-capitalize {
+  text-transform: capitalize;
+}
+
+.user-list-name:not(:hover) {
+  color: rgba(var(--v-theme-on-background), var(--v-high-emphasis-opacity));
+}
+</style>
