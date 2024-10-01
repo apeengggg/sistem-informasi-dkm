@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class Users extends Model
+class MUsers extends Model
 {
     use HasFactory;
     protected $primaryKey = "user_id";
     protected $fillable = [
         "user_id", "role_id", "nip", "name", "email", "phone", "password", "status", "photo",
-        "created_dt", "created_by", "updated_dt", "updated_by"
+        "created_at", "created_by", "updated_at", "updated_by"
     ];
 
     public static function getUserFromEmail($email){
@@ -52,7 +52,7 @@ class Users extends Model
                 ->update([
                     'status' => 0, 
                     'updated_by' => $who,
-                    'updated_dt' => date('Y-m-d H:i:s')
+                    'updated_at' => date('Y-m-d H:i:s')
                 ]);
     }
 
@@ -60,7 +60,7 @@ class Users extends Model
         $query = DB::table('m_users as u')
                 ->join('m_roles as r', 'u.role_id', '=', 'r.role_id')
                 ->select('u.user_id', 'u.role_id', 'u.nip', 'u.name', 'u.email', 'u.phone', 'u.photo', 'u.status', 'r.role_name')
-                ->where('u.status', 1);
+                ->where('u.status', $param->status);
 
         if($param->userId){
             $query = $query->where('u.user_id', $param->userId);
@@ -86,6 +86,9 @@ class Users extends Model
 
             $query = $query->orderBy($param->orderBy, $dir);
         }
+
+        // dd($param->status);
+        // dd($query->toSql());
 
         $query = $query->paginate($param->perPage);
 

@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Permissions;
+use App\Models\MPermissions;
 use Closure;
 use Illuminate\Http\Request;
 use App\Utils\ResponseUtil;
@@ -24,7 +24,7 @@ class PermissionFilter
         $role_id = $request->attributes->get('role_id');
 
         if($user_id && $role_id && $user_id != "" && $role_id != ""){
-            $permission = Permissions::getPermissionByFunctionAndRoleId($function_id, $role_id);
+            $permission = MPermissions::getPermissionByFunctionAndRoleId($function_id, $role_id);
 
             $method = $request->method();
             $hasAccess = false;

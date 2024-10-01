@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Utils\ResponseUtil;
-use App\Models\Users;
+use App\Models\MUsers;
 use App\Utils\StringUtil;
 use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Uuid;
@@ -29,6 +29,7 @@ class UserApiController extends Controller
                 'orderBy' => 'string|required|in:user_id,role_id,nip,name,email,phone,role_name',
                 'dir' => 'min:3|max:3|string|in:asc,desc|required',
                 'perPage' => 'numeric|required',
+                'status' => 'numeric|in:1,0',
             ],[
                 'userId.min' => 'User Id Minimal 1 Character',
                 'userId.string' => 'User Id Must Be String',
@@ -48,6 +49,7 @@ class UserApiController extends Controller
                 'dir.required' => 'Dir is Required',
                 'perPage.number' => 'PerPage Must Be Number',
                 'perPage.required' => 'PerPage is Required',
+                'status.in' => 'Status Is Not Valid Value',
             ]);
     
             //Send failed response if request is not valid
@@ -56,7 +58,7 @@ class UserApiController extends Controller
                 return ResponseUtil::BadRequest($errorMessages);
             }
     
-            $results = Users::getUsers($request);
+            $results = MUsers::getUsers($request);
             return ResponseUtil::Ok("Successfully Get Data", $results);
         }catch(\Exception $e){
             return ResponseUtil::InternalServerError($e);
@@ -114,13 +116,19 @@ class UserApiController extends Controller
                 return ResponseUtil::BadRequest($errorMessages);
             }
 
-            if($request->hasFile('photo')){
-                $file = $request->file('photo');
-                $fileName = $file->getClientOriginalName();
-                $fileName = $user_id."_".$fileName;
-                $path = $file->store('foto-profile', $fileName, 'public');
-            }
+            // dd($request->all());
 
+            // dd($request->hasFile('photo'));
+            if($request->hasFile('photo')){
+                try{
+                    $file = $request->file('photo');
+                    $fileName = $user_id . "_" . $file->getClientOriginalName();
+                    $path = $file->storeAs('foto-profile', $fileName, 'public');
+                }catch(\Exception $e){
+                    dd($e);
+                }
+            }
+            
             $path = 'foto-profile/'.$fileName;
 
             $validatePhoneNumberFormat = StringUtil::validateIndonesianPhoneNumber($request->phone);
@@ -128,15 +136,16 @@ class UserApiController extends Controller
                 return ResponseUtil::BadRequest('Phone Number is Not Valid');
             }
 
-            $validateEmailPhoneNip = Users::getUserFromEmailPhoneNip($request->email, $request->phone, $request->nip);
-            if($validateEmailPhoneNip){
-                return ResponseUtil::BadRequest('Bad Request');
-            }
+            // $validateEmailPhoneNip = Users::getUserFromEmailPhoneNip($request->email, $request->phone, $request->nip);
+            // if($validateEmailPhoneNip){
+            //     return ResponseUtil::BadRequest('Bad Request');
+            // }
 
-            $validateRoleId = Users::getRoleFromRoleId($request->role_id);
-            if($validateRoleId){
-                return ResponseUtil::BadRequest('Bad Request');
-            }
+            // $validateRoleId = Users::getRoleFromRoleId($request->role_id);
+            // if($validateRoleId){
+            //     return ResponseUtil::BadRequest('Bad Request');
+            // }
+            
 
             $data = [
                 'user_id' => $user_id,
@@ -148,10 +157,10 @@ class UserApiController extends Controller
                 'password' => bcrypt($request->password),
                 'status' => 1,
                 'photo' => $path,
-                'created_by' => $request->attributes->get('user_id')
+                'created_by' => 'SYS'
             ];
 
-            Users::create($data);
+            MUsers::create($data);
             
             return ResponseUtil::Ok('Successfully created', null);
         }catch(\Exception $e){

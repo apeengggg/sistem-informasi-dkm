@@ -6,12 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class Permissions extends Model
+class MPermissions extends Model
 {
     use HasFactory;
 
     protected $primaryKey = 'permission_id';
-    protected $fillable = ['permission_id', 'role_id', 'function_id', 'created_permission', 'read_permission', 'updated_permission', 'delete_permission', 'created_dt', 'created_at', 'updated_dt', 'updated_at'];
+    protected $fillable = ['permission_id', 'role_id', 'function_id', 'created_permission', 'read_permission', 'updated_permission', 'delete_permission', 'created_by', 'created_at', 'updated_by'];
 
     public static function getPermissionById($id){
         $data = DB::table('m_functions as f')

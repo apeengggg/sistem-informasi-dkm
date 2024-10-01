@@ -4,8 +4,8 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Users;
-use App\Models\Permissions;
+use App\Models\MUsers;
+use App\Models\MPermissions;
 use App\Utils\ResponseUtil;
 use App\Utils\PermissionUtil;
 use Illuminate\Support\Facades\Hash;
@@ -47,7 +47,7 @@ class AuthController extends Controller
                 return ResponseUtil::BadRequest($errorMessages);
             }
 
-            $results = Users::getUserFromEmail($request->email);
+            $results = MUsers::getUserFromEmail($request->email);
             if($results == null){
                 return ResponseUtil::Unauthorized("Login failed, either your User Id isn't registered in our system or your password is incorrect");
             }
@@ -57,7 +57,7 @@ class AuthController extends Controller
                 return ResponseUtil::Unauthorized("Login failed, either your User Id isn't registered in our system or your password is incorrect");
             }
 
-            $permission = Permissions::getPermissionById($results->role_id);
+            $permission = MPermissions::getPermissionById($results->role_id);
             // echo $permission;
             if(!$permission){
                 return ResponseUtil::Unauthorized("Login failed, either your User Id isn't registered in our system or your password is incorrect");

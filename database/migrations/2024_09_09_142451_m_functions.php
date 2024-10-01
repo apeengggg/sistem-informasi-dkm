@@ -18,9 +18,9 @@ class MFunctions extends Migration
             $table->string('function_id', 100)->primary();
             $table->string('function_name', 50);
             $table->string('parent_function_id', 100)->nullable();
-            $table->timestamp('created_dt')->default(DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->string('created_by', 100);
-            $table->timestamp('updated_dt')->nullable();
+            $table->timestamp('updated_at')->nullable();
             $table->string('updated_by', 100)->nullable();
         });
     }
