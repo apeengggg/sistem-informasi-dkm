@@ -1,4 +1,5 @@
 export default [
+  { heading: 'Dashboards' },
   {
     title: 'Dashboards',
     icon: { icon: 'tabler-smart-home' },
