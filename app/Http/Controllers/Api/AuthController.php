@@ -73,7 +73,7 @@ class AuthController extends Controller
             $results = [
                 'user_id' => $results->user_id,
                 'name' => $results->name,
-                'foto_profile' => $results->photo,
+                'foto_profile' => env('APP_URL').'/storage/'.$results->photo,
                 'role_id' => $results->role_id,
                 'role_name' => $results->role_name,
                 'permission' => $object_permission,
