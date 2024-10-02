@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\UserApiController;
 Route::prefix('v1')->group(function () {
     Route::prefix('users')->group(function () {
         Route::get('/', [UserApiController::class, 'index']);
+        Route::get('/{id}', [UserApiController::class, 'getById']);
         Route::post('/', [UserApiController::class, 'store']);
         Route::put('/', [UserApiController::class, 'update']);
         Route::delete('/', [UserApiController::class, 'destroy']);

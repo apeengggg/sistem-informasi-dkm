@@ -60,9 +60,37 @@ class UserApiController extends Controller
             }
     
             $results = MUsers::getUsers($request);
+            foreach($results as $r){
+                $r->photo = env('APP_URL').'/storage/'.$r->photo;
+            }
             $meta_user = MUsers::getMetaUsers();
 
             return ResponseUtil::Ok("Successfully Get Data", $results, $meta_user);
+        }catch(\Exception $e){
+            return ResponseUtil::InternalServerError($e);
+        }
+    }
+
+    public function getById(Request $request, $id)
+    {   
+        try{
+            $validator = Validator::make($request->all(), [
+                'userId' => 'min:1|string',
+            ],[
+                'userId.min' => 'User Id Minimal 1 Character',
+                'userId.string' => 'User Id Must Be String'
+            ]);
+    
+            //Send failed response if request is not valid
+            if ($validator->fails()) {
+                $errorMessages = StringUtil::ErrorMessage($validator);
+                return ResponseUtil::BadRequest($errorMessages);
+            }
+    
+            $results = MUsers::getUserFromUserId($id);
+            $results->photo = env('APP_URL').'/storage/'.$results->photo;
+
+            return ResponseUtil::Ok("Successfully Get Data", $results);
         }catch(\Exception $e){
             return ResponseUtil::InternalServerError($e);
         }

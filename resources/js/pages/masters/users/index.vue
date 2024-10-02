@@ -181,7 +181,7 @@ const addNewUser = userData => {
                     >
                       <VImg
                         v-if="user.photo"
-                        :src="resolveUserAvatar(user.photo)"
+                        :src="user.photo"
                       />
                       <span v-else>{{ avatarText(user.name) }}</span>
                     </VAvatar>
@@ -229,18 +229,22 @@ const addNewUser = userData => {
                   class="text-center"
                   style="width: 5rem;"
                 >
-                  <VBtn
-                    icon
-                    size="x-small"
-                    color="default"
-                    variant="text"
+                  <RouterLink
+                    :to="{ name: 'masters-users-id', params: { id: user.user_id } }"
+                    class="font-weight-medium user-list-name"
                   >
-                    <VIcon
-                      size="22"
-                      icon="tabler-edit"
-                    />
-                  </VBtn>
-
+                    <VBtn
+                      icon
+                      size="x-small"
+                      color="default"
+                      variant="text"
+                    >
+                      <VIcon
+                        size="22"
+                        icon="tabler-edit"
+                      />
+                    </VBtn>
+                  </RouterLink>
                   <VBtn
                     icon
                     size="x-small"
@@ -254,7 +258,7 @@ const addNewUser = userData => {
                     />
                   </VBtn>
 
-                  <VBtn
+                  <!-- <VBtn
                     icon
                     size="x-small"
                     color="default"
@@ -277,7 +281,7 @@ const addNewUser = userData => {
                         />
                       </VList>
                     </VMenu>
-                  </VBtn>
+                  </VBtn> -->
                 </td>
               </tr>
             </tbody>
@@ -519,10 +523,6 @@ const addNewUser = userData => {
             obj.stats = data.inactive_users
           }
         })
-      },
-      resolveUserAvatar(path){
-        // console.log('http://localhost:8000/storage/'+path)
-        return 'http://localhost:8000/storage/'+path
       },
       resolveUserRoleVariant(role){
         if (role.toLowerCase() === 'subscriber')
