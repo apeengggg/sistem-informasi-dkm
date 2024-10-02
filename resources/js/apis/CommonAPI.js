@@ -1,5 +1,6 @@
 import axios from 'axios'
 import utils from "@/utils/CommonUtils"
+import Swal from 'sweetalert2'
 
 export default {
     async getCommon(url, params, callback) {
@@ -142,7 +143,7 @@ export default {
             method: method, // *GET, POST, PUT, DELETE, etc.
             headers: {
               'Content-Type': 'application/json',
-              "Authorization": 'Bearer ' + localStorage.id_token,
+              "Authorization": 'Bearer ' + localStorage.token,
             },
         }
 
@@ -152,6 +153,12 @@ export default {
 
           let response = await fetch(uri,  payload);
           let jsonResponse = await response.json();
+          console.log("🚀 ~ execJsonApi ~ jsonResponse:", jsonResponse)
+          if(jsonResponse.status == 401){
+              Swal.fire('Error!', jsonResponse.message, 'error')
+              window.location.href = '/apps/login'
+              return
+          }
           return jsonResponse;
         }catch(e){       
           console.log("🚀 ~ execJsonApi ~ e:", e)
