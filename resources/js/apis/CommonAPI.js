@@ -152,6 +152,11 @@ export default {
 
           let response = await fetch(uri,  payload);
           let jsonResponse = await response.json();
+          if(jsonResponse.status == 401){
+            Swal.fire('Error!', jsonResponse.message, 'error')
+            window.location.href = '/apps/login'
+            return
+          }
           return jsonResponse;
         }catch(e){       
           console.log("🚀 ~ execJsonApi ~ e:", e)

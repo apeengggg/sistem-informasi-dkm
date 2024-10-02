@@ -134,7 +134,8 @@ export default {
 
   },
   mounted(){
-
+    localStorage.removeItem('token')
+    localStorage.removeItem('user_data')
   },
   data(){
     return{
