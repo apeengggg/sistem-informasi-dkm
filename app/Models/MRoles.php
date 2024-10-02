@@ -15,9 +15,9 @@ class MRoles extends Model
         "created_at", "created_by", "updated_at", "updated_by"
     ];
 
-    public static function getAll($param){
+    public static function getAll(){
         return DB::table('m_roles as r')
-        ->select('r.role_id', 'r.role_name')
+        ->select('r.role_id as value', 'r.role_name as title')
         ->get();
     } 
 }

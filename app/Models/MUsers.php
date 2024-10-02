@@ -66,15 +66,15 @@ class MUsers extends Model
             $query = $query->where('u.user_id', $param->userId);
         }
         
-        if($param->roleId){
+        if($param->roleId && $param->roleId != 'null'){
             $query = $query->where('r.role_id', $param->roleId);
         }
 
-        if($param->name){
+        if($param->name && $param->name != 'null'){
             $query = $query->whereRaw('LOWER(u.name) LIKE ?', ['%' . strtolower($param->name) . '%']);
         }
 
-        if($param->email){
+        if($param->email && $param->email != 'null'){
             $query = $query->whereRaw('LOWER(u.email) LIKE ?', ['%' . strtolower($param->email) . '%']);
         }
 

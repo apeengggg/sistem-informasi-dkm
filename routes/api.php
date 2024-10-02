@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\RoleApiController;
 use App\Http\Controllers\Api\UserApiController;
 /*
 |--------------------------------------------------------------------------
@@ -21,6 +22,10 @@ Route::prefix('v1')->group(function () {
         Route::post('/', [UserApiController::class, 'store']);
         Route::put('/', [UserApiController::class, 'update']);
         Route::delete('/', [UserApiController::class, 'destroy']);
+    });
+
+    Route::prefix('roles')->group(function () {
+        Route::get('/all', [RoleApiController::class, 'all']);
     });
 
     Route::prefix('auth')->group(function () {

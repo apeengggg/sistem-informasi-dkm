@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Utils\ResponseUtil;
 use App\Models\MUsers;
+use App\Models\MRoles;
 use App\Utils\StringUtil;
 use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Uuid;
@@ -62,6 +63,17 @@ class RoleApiController extends Controller
             $meta_user = MUsers::getMetaUsers();
 
             return ResponseUtil::Ok("Successfully Get Data", $results, $meta_user);
+        }catch(\Exception $e){
+            return ResponseUtil::InternalServerError($e);
+        }
+    }
+
+    public function all()
+    {   
+        try{
+            $results = MRoles::getAll();
+
+            return ResponseUtil::Ok("Successfully Get Data", $results);
         }catch(\Exception $e){
             return ResponseUtil::InternalServerError($e);
         }

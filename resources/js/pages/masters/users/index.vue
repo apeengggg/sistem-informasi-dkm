@@ -54,8 +54,10 @@ const addNewUser = userData => {
               <VTextField
                   v-model="param_query.name"
                   label="Name"
+                  clearable
                   placeholder="Name"
                   density="compact"
+                  v-on:keyup.enter="doSearch(1)"
                 />
               </VCol>
               <VCol
@@ -65,8 +67,10 @@ const addNewUser = userData => {
               <VTextField
                   v-model="param_query.email"
                   label="Email"
+                  clearable
                   placeholder="Email"
                   density="compact"
+                  v-on:keyup.enter="doSearch(1)" 
                 />
               </VCol>
               <!-- 👉 Select Role -->
@@ -330,6 +334,7 @@ const addNewUser = userData => {
     },
     mounted(){
       this.doSearch(1)
+      this.doSearchAllRole()
     },
     data(){
       return {
@@ -383,28 +388,7 @@ const addNewUser = userData => {
             value: 0,
           },
         ],
-        roles: [
-          {
-            title: 'Admin',
-            value: 'admin',
-          },
-          {
-            title: 'Author',
-            value: 'author',
-          },
-          {
-            title: 'Editor',
-            value: 'editor',
-          },
-          {
-            title: 'Maintainer',
-            value: 'maintainer',
-          },
-          {
-            title: 'Subscriber',
-            value: 'subscriber',
-          },
-        ]
+        roles: []
       }
     },
     watch: {
@@ -414,10 +398,13 @@ const addNewUser = userData => {
           }
           this.doSearch(this.page.pageNo)
         },
-        'page.pageSize'(){
+      'page.pageSize'(){
         this.doSearch(this.page.pageNo)
       },
       'selectedStatus'(){
+        this.doSearch(this.page.pageNo)
+      },
+      'param_query.roleId'(){
         this.doSearch(this.page.pageNo)
       }
     },
@@ -433,6 +420,18 @@ const addNewUser = userData => {
       async doSearch(page){
           this.loading = true
           let param = `orderBy=${this.orderBy}&dir=${this.dir}&perPage=${this.page.pageSize}&page=${page}&status=${this.selectedStatus == null ? 1 : this.selectedStatus}`
+
+          if(this.param_query.name != "" && this.param_query.name != "null"){
+            param += `&name=${this.param_query.name}`
+          }
+
+          if(this.param_query.email != "" && this.param_query.email != "null"){
+            param += `&email=${this.param_query.email}`
+          }
+
+          if(this.param_query.roleId != "" && this.param_query.roleId != "null"){
+            param += `&roleId=${this.param_query.roleId}`
+          }
 
           let uri = `/api/v1/users?${param}`;
           let responseBody = await api.jsonApi(uri,'GET');
@@ -462,6 +461,18 @@ const addNewUser = userData => {
           }
           this.loading = false
       },
+      async doSearchAllRole(page){
+          this.loading = true
+          let uri = `/api/v1/roles/all`;
+          let responseBody = await api.jsonApi(uri,'GET');
+          console.log("🚀 ~ doSearchAllRole ~ responseBody:", responseBody)
+          if( responseBody.status != 200 ){
+            this.errorMessage = responseBody.message;
+          }else{
+            this.roles = responseBody.data;
+          }
+          this.loading = false
+      },
       async doDelete(user_id){
         Swal.fire({
           title: "Are you sure?",
@@ -486,7 +497,7 @@ const addNewUser = userData => {
               this.warningMessage = '';
               this.errorMessage = responseBody.message;
             }else{
-              console.log("🚀 ~ doDelete ~ responseBody:", responseBody)
+              Swal.fire('Deleted!', responseBody.message, 'success')
             }
             this.loading = false
             this.doSearch(1)
@@ -508,28 +519,6 @@ const addNewUser = userData => {
             obj.stats = data.inactive_users
           }
         })
-        // const meta = [
-        // {
-        //     icon: 'tabler-user',
-        //     color: 'primary',
-        //     title: 'Total Users',
-        //     stats: data.total_users.toString(),
-        //   },
-        //   {
-        //     icon: 'tabler-user-check',
-        //     color: 'success',
-        //     title: 'Active Users',
-        //     stats: data.active_users.toString(),
-        //   },
-        //   {
-        //     icon: 'tabler-user-x',
-        //     color: 'danger',
-        //     title: 'Inactive Users',
-        //     stats: data.inactive_users.toString(),
-        //   },
-        // ]
-        // console.log(meta)
-        // this.userListMeta.push(meta)
       },
       resolveUserAvatar(path){
         // console.log('http://localhost:8000/storage/'+path)
