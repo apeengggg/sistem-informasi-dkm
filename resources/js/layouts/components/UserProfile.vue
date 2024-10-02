@@ -4,7 +4,8 @@ import { useAppAbility } from '@/plugins/casl/useAppAbility'
 
 const router = useRouter()
 const ability = useAppAbility()
-const userData = JSON.parse(localStorage.getItem('userData') || 'null')
+const userData = JSON.parse(localStorage.getItem('user_data') || 'null')
+console.log("🚀 ~ userData:", userData)
 
 const logout = () => {
 
@@ -39,8 +40,8 @@ const logout = () => {
       variant="tonal"
     >
       <VImg
-        v-if="userData && userData.avatar"
-        :src="userData.avatar"
+        v-if="userData && userData.foto_profile"
+        :src="userData.foto_profile"
       />
       <VIcon
         v-else
@@ -71,8 +72,8 @@ const logout = () => {
                     variant="tonal"
                   >
                     <VImg
-                      v-if="userData && userData.avatar"
-                      :src="userData.avatar"
+                      v-if="userData && userData.foto_profile"
+                      :src="userData.foto_profile"
                     />
                     <VIcon
                       v-else
@@ -84,9 +85,9 @@ const logout = () => {
             </template>
 
             <VListItemTitle class="font-weight-semibold">
-              {{ userData.fullName }}
+              {{ userData.name }}
             </VListItemTitle>
-            <VListItemSubtitle>{{ userData.role }}</VListItemSubtitle>
+            <VListItemSubtitle>{{ userData.role_name }}</VListItemSubtitle>
           </VListItem>
 
           <VDivider class="my-2" />

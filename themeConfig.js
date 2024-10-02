@@ -9,13 +9,13 @@ import { AppContentLayoutNav, ContentWidth, FooterType, NavbarType } from '@layo
 
 export const { themeConfig, layoutConfig } = defineThemeConfig({
   app: {
-    title: 'Vuexy',
+    title: 'SIM-DKM',
     logo: h('div', { innerHTML: logo, style: 'line-height:0; color: rgb(var(--v-global-theme-primary))' }),
     contentWidth: ContentWidth.Boxed,
     contentLayoutNav: AppContentLayoutNav.Vertical,
     overlayNavFromBreakpoint: breakpointsVuetify.md + 16,
     enableI18n: true,
-    theme: 'light',
+    theme: 'dark',
     isRtl: false,
     skin: Skins.Default,
     routeTransition: RouteTransitions.Fade,
