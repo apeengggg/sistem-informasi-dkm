@@ -51,25 +51,25 @@ class AuthController extends Controller
             if($results == null){
                 return ResponseUtil::Unauthorized("Login failed, either your User Id isn't registered in our system or your password is incorrect");
             }
-
+            
             $compare = Hash::check($request->password, $results->password);
             if(!$compare){
                 return ResponseUtil::Unauthorized("Login failed, either your User Id isn't registered in our system or your password is incorrect");
             }
-
+            
             $permission = MPermissions::getPermissionById($results->role_id);
             // echo $permission;
             if(!$permission){
                 return ResponseUtil::Unauthorized("Login failed, either your User Id isn't registered in our system or your password is incorrect");
             }
-
+            
             $object_permission = PermissionUtil::createObjectPermission($permission);
-
+            
             $payload_data = [
                 'user_id' => $results->user_id,
                 'role_id' => $results->role_id
             ];
-
+            
             $results = [
                 'user_id' => $results->user_id,
                 'name' => $results->name,

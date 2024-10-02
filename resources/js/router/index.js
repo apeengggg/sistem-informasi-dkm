@@ -1,26 +1,16 @@
 import { setupLayouts } from 'virtual:generated-layouts'
 import { createRouter, createWebHistory } from 'vue-router'
-import { isUserLoggedIn } from './utils'
 import routes from '~pages'
-import { canNavigate } from '@layouts/plugins/casl'
+import jwtDecode from 'jwt-decode';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    // ℹ️ We are redirecting to different pages based on role.
-    // NOTE: Role is just for UI purposes. ACL is based on abilities.
     {
       path: '/',
       redirect: to => {
         return { name: 'dashboards-analytics' }
-        // const userData = JSON.parse(localStorage.getItem('userData') || '{}')
-        // const userRole = userData && userData.role ? userData.role : null
-        // if (userRole === 'admin')
-        // if (userRole === 'client')
-        //   return { name: 'access-control' }
-        
-        // return { name: 'login', query: to.query }
-      },
+      }
     },
     {
       path: '/pages/user-profile',
@@ -34,41 +24,40 @@ const router = createRouter({
   ],
 })
 
+function isAuthenticated() {
+  const token = localStorage.getItem('token');
+  console.log("🚀 ~ isAuthenticated ~ token:", token)
+
+  if (!token) {
+    return false; // No token
+  }
+
+  try {
+    const decodedToken = jwtDecode(token);
+    console.log("🚀 ~ isAuthenticated ~ decodedToken:", decodedToken)
+    const currentTime = Date.now() / 1000;
+
+    if (decodedToken.exp && decodedToken.exp < currentTime) {
+      return false; // Token expired
+    }
+
+    return true; // Token valid
+  } catch (error) {
+    console.error('Invalid token:', error);
+    return false; // Invalid token
+  }
+}
+
 
 // Docs: https://router.vuejs.org/guide/advanced/navigation-guards.html#global-before-guards
-router.beforeEach(to => {
-  const isLoggedIn = isUserLoggedIn()
-
-  /*
-  
-    ℹ️ Commented code is legacy code
-  
-    if (!canNavigate(to)) {
-      // Redirect to login if not logged in
-      // ℹ️ Only add `to` query param if `to` route is not index route
-      if (!isLoggedIn)
-        return next({ name: 'login', query: { to: to.name !== 'index' ? to.fullPath : undefined } })
-  
-      // If logged in => not authorized
-      return next({ name: 'not-authorized' })
-    }
-  
-    // Redirect if logged in
-    if (to.meta.redirectIfLoggedIn && isLoggedIn)
-      next('/')
-  
-    return next()
-  
-    */
-  if (canNavigate(to)) {
-    if (to.meta.redirectIfLoggedIn && isLoggedIn)
-      return '/'
+router.beforeEach((to, from, next) => {
+  console.log("🚀 ~ router.beforeEach ~ to:", to)
+  // console.log('env', import.meta.env.VITE_JWT_SECRET)
+  if (to.meta.requiresLogin && !isAuthenticated()) {
+    // If not authenticated, redirect to login page
+    return next({ name: 'apps-login'})
   }
-  else {
-    if (isLoggedIn)
-      return { name: 'not-authorized' }
-    else
-      return { name: 'login', query: { to: to.name !== 'index' ? to.fullPath : undefined } }
-  }
+  // // If authenticated or route doesn't require auth, proceed as normal
+  next();
 })
 export default router
