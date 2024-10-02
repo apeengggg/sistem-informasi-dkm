@@ -66,15 +66,15 @@ class MUsers extends Model
             $query = $query->where('u.user_id', $param->userId);
         }
         
-        if($param->roleId){
+        if($param->roleId && $param->roleId != 'null'){
             $query = $query->where('r.role_id', $param->roleId);
         }
 
-        if($param->name){
+        if($param->name && $param->name != 'null'){
             $query = $query->whereRaw('LOWER(u.name) LIKE ?', ['%' . strtolower($param->name) . '%']);
         }
 
-        if($param->email){
+        if($param->email && $param->email != 'null'){
             $query = $query->whereRaw('LOWER(u.email) LIKE ?', ['%' . strtolower($param->email) . '%']);
         }
 
@@ -93,5 +93,19 @@ class MUsers extends Model
         $query = $query->paginate($param->perPage);
 
         return $query;
+    }
+
+    public static function getMetaUsers(){
+        $totalUsers = DB::table('m_users')->count(); // Total users with status 1 or 0
+        $activeUsers = DB::table('m_users')->where('status', 1)->count(); // Users with status 1
+        $inactiveUsers = DB::table('m_users')->where('status', 0)->count(); // Users with status 0
+
+        return [
+            'meta_users' => [
+                'total_users' => $totalUsers,
+                'active_users' => $activeUsers,
+                'inactive_users' => $inactiveUsers
+            ]
+        ];
     }
 }

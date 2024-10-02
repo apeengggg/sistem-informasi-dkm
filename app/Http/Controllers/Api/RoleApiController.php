@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Ramsey\Uuid\Uuid;
 use Illuminate\Support\Facades\Storage;
 
-class UserApiController extends Controller
+class RoleApiController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -60,9 +60,6 @@ class UserApiController extends Controller
             }
     
             $results = MUsers::getUsers($request);
-            foreach($results as $r){
-                $r->photo = env('APP_URL').'/storage/'.$r->photo;
-            }
             $meta_user = MUsers::getMetaUsers();
 
             return ResponseUtil::Ok("Successfully Get Data", $results, $meta_user);
@@ -71,24 +68,10 @@ class UserApiController extends Controller
         }
     }
 
-    public function getById(Request $request, $id)
+    public function all()
     {   
         try{
-            $validator = Validator::make($request->all(), [
-                'userId' => 'min:1|string',
-            ],[
-                'userId.min' => 'User Id Minimal 1 Character',
-                'userId.string' => 'User Id Must Be String'
-            ]);
-    
-            //Send failed response if request is not valid
-            if ($validator->fails()) {
-                $errorMessages = StringUtil::ErrorMessage($validator);
-                return ResponseUtil::BadRequest($errorMessages);
-            }
-    
-            $results = MUsers::getUserFromUserId($id);
-            $results->photo = env('APP_URL').'/storage/'.$results->photo;
+            $results = MRoles::getAll();
 
             return ResponseUtil::Ok("Successfully Get Data", $results);
         }catch(\Exception $e){
@@ -167,12 +150,12 @@ class UserApiController extends Controller
                 return ResponseUtil::BadRequest('Phone Number is Not Valid');
             }
 
-            // $validateEmailPhoneNip = MUsers::getUserFromEmailPhoneNip($request->email, $request->phone, $request->nip);
+            // $validateEmailPhoneNip = Users::getUserFromEmailPhoneNip($request->email, $request->phone, $request->nip);
             // if($validateEmailPhoneNip){
             //     return ResponseUtil::BadRequest('Bad Request');
             // }
 
-            // $validateRoleId = MUsers::getRoleFromRoleId($request->role_id);
+            // $validateRoleId = Users::getRoleFromRoleId($request->role_id);
             // if($validateRoleId){
             //     return ResponseUtil::BadRequest('Bad Request');
             // }
@@ -254,12 +237,12 @@ class UserApiController extends Controller
                 return ResponseUtil::BadRequest('You cant delete your own account');
             }
             
-            $get_user = MUsers::getUserFromUserId($request->userId);
+            $get_user = Users::getUserFromUserId($request->userId);
             if(!$get_user){
                 return ResponseUtil::BadRequest('Bad Request');
             }
             
-            MUsers::deleteUser($request->userId, $request->attributes->get('user_id'));
+            Users::deleteUser($request->userId, $request->attributes->get('user_id'));
             return ResponseUtil::Ok('Successfully Deleted', null);
         }catch(\Exception $e){
             return ResponseUtil::InternalServerError($e);

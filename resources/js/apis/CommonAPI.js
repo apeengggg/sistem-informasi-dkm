@@ -1,5 +1,6 @@
 import axios from 'axios'
 import utils from "@/utils/CommonUtils"
+import Swal from 'sweetalert2'
 
 export default {
     async getCommon(url, params, callback) {
@@ -142,7 +143,7 @@ export default {
             method: method, // *GET, POST, PUT, DELETE, etc.
             headers: {
               'Content-Type': 'application/json',
-              "Authorization": 'Bearer ' + localStorage.id_token,
+              "Authorization": 'Bearer ' + localStorage.token,
             },
         }
 

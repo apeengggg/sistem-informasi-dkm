@@ -16,6 +16,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/resources/js/@iconify/icons-bundle.js
 
 package-lock.json
 
