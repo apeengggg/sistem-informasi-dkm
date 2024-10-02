@@ -10,13 +10,6 @@ import { useGenerateImageVariant } from '@core/composable/useGenerateImageVarian
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
 
-const form = ref({
-  email: '',
-  password: '',
-  remember: false,
-})
-
-const isPasswordVisible = ref(false)
 const authThemeImg = useGenerateImageVariant(authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
 const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 </script>
@@ -65,7 +58,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
             Welcome to {{ themeConfig.app.title }}! 👋🏻
           </h5>
           <p class="mb-0">
-            Please sign-in to your account and start the adventure
+            Silahkan masuk menggunakan akun anda
           </p>
         </VCardText>
         <VCardText>
@@ -93,13 +86,13 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 <div class="d-flex align-center flex-wrap justify-space-between mt-2 mb-4">
                   <VCheckbox
                     v-model="form.remember"
-                    label="Remember me"
+                    label="Ingat saya"
                   />
                   <RouterLink
                     class="text-primary ms-2 mb-1"
                     :to="{ name: 'pages-authentication-forgot-password-v2' }"
                   >
-                    Forgot Password?
+                    Lupa Password?
                   </RouterLink>
                 </div>
 
@@ -116,30 +109,12 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
                 cols="12"
                 class="text-center text-base"
               >
-                <span>New on our platform?</span>
-                <RouterLink
+                <!-- <RouterLink
                   class="text-primary ms-2"
                   :to="{ name: 'pages-authentication-register-v2' }"
                 >
-                  Create an account
-                </RouterLink>
-              </VCol>
-
-              <VCol
-                cols="12"
-                class="d-flex align-center"
-              >
-                <VDivider />
-                <span class="mx-4">or</span>
-                <VDivider />
-              </VCol>
-
-              <!-- auth providers -->
-              <VCol
-                cols="12"
-                class="text-center"
-              >
-                <AuthProvider />
+                  Buat Akun
+                </RouterLink> -->
               </VCol>
             </VRow>
           </VForm>
@@ -149,11 +124,40 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
   </VRow>
 </template>
 
+<script>
+// import
+
+export default {
+  components: {
+
+  },
+  mounted(){
+
+  },
+  data(){
+    return{
+      body: {
+        email: '',
+        password: '',
+        remember: '',
+      },
+      isPasswordVisible
+    }
+  },
+  methods: {
+    login(){
+      
+    }
+  },
+  watch: {
+
+  },
+  computed: {
+
+  }
+}
+</script>
+
 <style lang="scss">
 @use "@core-scss/template/pages/page-auth.scss";
 </style>
-
-<route lang="yaml">
-meta:
-  layout: blank
-</route>
