@@ -62,7 +62,7 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
           </p>
         </VCardText>
         <VCardText>
-          <VForm @submit.prevent="() => {}">
+          <VForm @submit.prevent="() => login()">
             <VRow>
               <!-- email -->
               <VCol cols="12">
@@ -126,6 +126,8 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 
 <script>
 // import
+import api from "@/apis/CommonAPI"
+import Swal from 'sweetalert2'
 
 export default {
   components: {
@@ -136,17 +138,37 @@ export default {
   },
   data(){
     return{
-      body: {
+      form: {
         email: '',
         password: '',
         remember: '',
       },
-      isPasswordVisible
+      isPasswordVisible: false,
+      loading: false,
     }
   },
   methods: {
-    login(){
-      
+    async login(){
+      this.loading = true
+
+      let uri = `/api/v1/auth/login`;
+      let responseBody = await api.jsonApi(uri,'POST', JSON.stringify(this.form));
+      console.log('Message', Array.isArray(responseBody.message))
+      if( responseBody.status != 200 ){
+        let msg = ''
+        if(Array.isArray(responseBody.message)){
+          msg = responseBody.message.toString()
+        }else{
+          msg = responseBody.message
+        }
+
+        Swal.fire('Error!', msg, 'error')
+      }else{
+        localStorage.setItem('user_data', JSON.stringify(responseBody.data))
+        localStorage.setItem('token', responseBody.data.token)
+        this.$router.push('/apps/user/list');
+      }
+      this.loading = false
     }
   },
   watch: {
@@ -161,3 +183,8 @@ export default {
 <style lang="scss">
 @use "@core-scss/template/pages/page-auth.scss";
 </style>
+
+<route lang="yaml">
+  meta:
+    layout: blank
+</route>

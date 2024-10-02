@@ -24,37 +24,39 @@ const router = createRouter({
   ],
 })
 
-// function isAuthenticated() {
-//   const token = localStorage.getItem('token');
+function isAuthenticated() {
+  const token = localStorage.getItem('token');
+  console.log("🚀 ~ isAuthenticated ~ token:", token)
 
-//   if (!token) {
-//     return false; // No token
-//   }
+  if (!token) {
+    return false; // No token
+  }
 
-//   try {
-//     const decodedToken = jwtDecode(token);
-//     console.log("🚀 ~ isAuthenticated ~ decodedToken:", decodedToken)
-//     const currentTime = Date.now() / 1000;
+  try {
+    const decodedToken = jwtDecode(token);
+    console.log("🚀 ~ isAuthenticated ~ decodedToken:", decodedToken)
+    const currentTime = Date.now() / 1000;
 
-//     if (decodedToken.exp && decodedToken.exp < currentTime) {
-//       return false; // Token expired
-//     }
+    if (decodedToken.exp && decodedToken.exp < currentTime) {
+      return false; // Token expired
+    }
 
-//     return true; // Token valid
-//   } catch (error) {
-//     console.error('Invalid token:', error);
-//     return false; // Invalid token
-//   }
-// }
+    return true; // Token valid
+  } catch (error) {
+    console.error('Invalid token:', error);
+    return false; // Invalid token
+  }
+}
 
 
 // Docs: https://router.vuejs.org/guide/advanced/navigation-guards.html#global-before-guards
 router.beforeEach((to, from, next) => {
+  console.log("🚀 ~ router.beforeEach ~ to:", to)
   // console.log('env', import.meta.env.VITE_JWT_SECRET)
-  // if (!isAuthenticated()) {
-  //   // If not authenticated, redirect to login page
-  //   return next({ name: 'pages-authentication-login-v2' });
-  // }
+  if (to.meta.requiresLogin && !isAuthenticated()) {
+    // If not authenticated, redirect to login page
+    return next({ name: 'apps-login'})
+  }
   // // If authenticated or route doesn't require auth, proceed as normal
   next();
 })
