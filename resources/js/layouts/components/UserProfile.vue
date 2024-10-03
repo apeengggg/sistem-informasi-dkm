@@ -11,10 +11,12 @@ const logout = () => {
 
   // Remove "userData" from localStorage
   localStorage.removeItem('userData')
+  localStorage.removeItem('user_data')
 
   // Remove "accessToken" from localStorage
   localStorage.removeItem('accessToken')
-  router.push('/login').then(() => {
+  localStorage.removeItem('token')
+  router.push('/apps/login').then(() => {
 
     // Remove "userAbilities" from localStorage
     localStorage.removeItem('userAbilities')

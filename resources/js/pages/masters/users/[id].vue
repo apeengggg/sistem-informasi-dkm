@@ -316,3 +316,8 @@
   color: white !important;
 }
 </style>
+
+<route lang="yaml">
+  meta:
+    requiresLogin: true
+</route>
