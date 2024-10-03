@@ -133,7 +133,7 @@
                 
               >
                 <VBtn type="submit">Save changes</VBtn>
-
+                <VBtn color="error" @click="this.$router.back()">Back</VBtn>
                 <VBtn
                   color="secondary"
                   variant="tonal"
