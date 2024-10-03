@@ -174,7 +174,7 @@ export default {
         localStorage.setItem('user_data', JSON.stringify(responseBody.data))
         localStorage.setItem('token', responseBody.data.token)
         this.ability.update([{action: 'manage',subject: 'all'}])
-        this.$router.push('/masters/users');
+        this.$router.push('/apps/masters/users');
       }
       this.loading = false
     }
