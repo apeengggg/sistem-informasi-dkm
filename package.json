@@ -8,8 +8,6 @@
     "build:icons": "node resources/js/@iconify/build-icons.js"
   },
   "dependencies": {
-    "@casl/ability": "^6.2.0",
-    "@casl/vue": "^2.2.0",
     "@floating-ui/dom": "1.0.4",
     "@tabler/icons": "^1.97.0",
     "@vueuse/core": "^9.5.0",
