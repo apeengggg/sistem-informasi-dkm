@@ -1,179 +1,159 @@
 <script setup>
-  import {
-    alphaDashValidator,
-    alphaValidator,
-    betweenValidator,
-    confirmedValidator,
-    emailValidator,
-    integerValidator,
-    lengthValidator,
-    passwordValidator,
-    regexValidator,
-    requiredValidator,
-    urlValidator,
-  } from '@validators'
-  const refForm = ref()
+  const refInputEl = ref()
 </script>
 
 <template>
-<VForm
-  ref="refForm"
-  @submit.prevent
->
-    <VRow>
-    <!-- SECTION User Details -->
+  <VRow>
     <VCol cols="12">
-      <VCard>
-        <VCardText class="text-center pt-15">
+      <VCard title="User Details">
+        <VCardText class="d-flex">
           <!-- 👉 Avatar -->
           <VAvatar
+            rounded
+            size="150"
+            class="me-6"
+            :image="body.photo ? body.photo : data.photo"
+          />
 
-            :size="200"
+          <!-- 👉 Upload Photo -->
+          <form
+            ref="refForm"
+            class="d-flex flex-column justify-center gap-4"
           >
-            <VImg
-              v-if="true"
-              :src="isEdit ? body.photo : data.photo"
-              @click="changeImage()"
-            />
-            <span
-              v-else
-              class="text-5xl font-weight-semibold"
-            >
-              {{ avatarText(data.name) }}
-            </span>
-          </VAvatar>
+            <div class="d-flex flex-wrap gap-2">
+              <VBtn
+                color="primary"
+                @click="refInputEl?.click()"
+              >
+                <VIcon
+                  icon="tabler-cloud-upload"
+                  class="d-sm-none"
+                />
+                <span class="d-none d-sm-block">Upload new photo</span>
+              </VBtn>
 
-          <!-- 👉 User fullName -->
-          <h6 class="text-h6 mt-4">
-            {{ data.name }}
-          </h6>
+              <input
+                ref="refInputEl"
+                type="file"
+                name="file"
+                accept=".jpeg,.png,.jpg"
+                hidden
+                @input="handleFileUpload($event)"
+              >
 
-          <!-- 👉 Role chip -->
-          <!-- :color="resolveUserRoleVariant(data.role_name).color" -->
-          <VChip
-          label
-          size="small"
-            class="text-capitalize mt-4"
-          >
-            {{ data.role_name }}
-          </VChip>
+              <VBtn
+                type="reset"
+                color="secondary"
+                variant="tonal"
+                @click="resetForm"
+              >
+                <span class="d-none d-sm-block">Reset</span>
+                <VIcon
+                  icon="tabler-refresh"
+                  class="d-sm-none"
+                />
+              </VBtn>
+            </div>
+
+            <p class="text-body-1 mb-0">
+              Allowed JPG, JPEG or PNG. Max size of 1MB
+            </p>
+          </form>
         </VCardText>
 
         <VDivider />
 
-        <!-- 👉 Details -->
-        <VCardText>
-          <p class="text-sm text-uppercase text-disabled">
-            Details
-          </p>
+        <VCardText class="pt-2">
+          <!-- 👉 Form -->
+          <VForm @submit.prevent="doUpdate" v-model="isFormValid" class="mt-6">
+            <VRow>
+              <!-- 👉 First Name -->
+              <VCol
+                md="6"
+                cols="12"
+              >
+                <VTextField
+                  v-model="body.nip"
+                  label="NIP"
+                  readonly
+                />
+              </VCol>
 
-        
-          <!-- 👉 User Details list -->
-            <VList class="card-list mt-2">
-              <VListItem>
-                <VListItemTitle>
-                  <h6 class="text-base font-weight-semibold">
-                    Name:
-                    <VRow v-if="isEdit">
-                      <VCol cols="4">
-                        <VTextField
-                          v-model="body.name"
-                          class="mt-1"
-                          clearable
-                          placeholder="Name"
-                          :rules="[requiredValidator]"
-                        />
-                      </VCol>
-                    </VRow>
-                    <span class="text-body-2" v-else>
-                      {{ data.name }}
-                    </span>
-                  </h6>
-                </VListItemTitle>
-              </VListItem>
+              <!-- 👉 Last Name -->
+              <VCol
+                md="6"
+                cols="12"
+              >
+                <VTextField
+                  v-model="body.name"
+                  label="Nama"
+                />
+              </VCol>
 
-              <VListItem>
-                <VListItemTitle>
-                  <h6 class="text-base font-weight-semibold">
-                    Email:
-                    <VRow v-if="isEdit">
-                      <VCol cols="4">
-                        <VTextField
-                          class="mt-1"
-                          v-model="body.email"
-                          persistent-placeholder
-                          clearable
-                          placeholder="Must be a valid email"
-                          :rules="[requiredValidator, emailValidator]"
-                        />
-                      </VCol>
-                    </VRow>
-                    <span class="text-body-2" v-else>
-                      {{ data.email }}
-                    </span>
-                  </h6>
-                </VListItemTitle>
-              </VListItem>
-              <VListItem>
-                <VListItemTitle>
-                  <h6 class="text-base font-weight-semibold">
-                    Status:
+              <!-- 👉 Email -->
+              <VCol
+                cols="12"
+                md="6"
+              >
+                <VTextField
+                  v-model="body.email"
+                  label="E-mail"
+                  type="email"
+                />
+              </VCol>
 
-                    <!-- :color="resolveUserStatusVariant(data.status == 1 ? 'Active' : 'Inactive')" -->
-                    <VChip
-                      label
-                      size="small"
-                      class="text-capitalize"
-                    >
-                      {{ data.status == 1 ? 'Active' : 'Inactive' }}
-                    </VChip>
-                  </h6>
-                </VListItemTitle>
-              </VListItem>
-              <VListItem>
-                <VListItemTitle>
-                  <h6 class="text-base font-weight-semibold">
-                    Role:
-                    <span class="text-capitalize text-body-2">{{ data.role_name }}</span>
-                  </h6>
-                </VListItemTitle>
-              </VListItem>
-            </VList>
-            <input
-              type="file"
-              ref="fileInput"
-              @change="handleFileUpload"
-              style="display: none"
-            />
-        </VCardText>
+              <!-- 👉 Organization -->
+              <VCol
+                cols="12"
+                md="6"
+              >
+                <VTextField
+                  v-model="body.phone"
+                  label="No. Telepon"
+                />
+              </VCol>
 
-        <!-- 👉 Edit and Suspend button -->
-        <VCardText class="d-flex justify-center">
-          <VBtn
-            variant="flat"
-            class="me-3"
-            @click="editForm()"
-          >
-            {{ isEdit ? 'Cancel' : 'Edit' }}
-          </VBtn>
-          <VBtn
-            variant="flat"
-            v-if="isEdit"
-            @click="refForm?.validate()"
-            type="submit"
-          >
-            Save
-          </VBtn>
+              <VCol
+                cols="12"
+                md="6"
+              >
+                <VSelect
+                  v-model="body.roleId"
+                  label="Select Role"
+                  :items="roles"
+                  clearable
+                  clear-icon="tabler-x"
+                />
+              </VCol>
+
+              <!-- 👉 Form Actions -->
+              <VCol
+                cols="12"
+                class="d-flex flex-wrap gap-4"
+                
+              >
+                <VBtn type="submit">Save changes</VBtn>
+                <VBtn color="error" @click="this.$router.back()">Back</VBtn>
+                <VBtn
+                  color="secondary"
+                  variant="tonal"
+                  type="reset"
+                  @click.prevent="resetForm"
+                >
+                  Reset
+                </VBtn>
+              </VCol>
+            </VRow>
+          </VForm>
         </VCardText>
       </VCard>
     </VCol>
-    <!-- !SECTION -->
   </VRow>
-</VForm>
 </template>
 
 <script>
   import api from "@/apis/CommonAPI"
+  import utils from "@/utils/CommonUtils"
   import { avatarText } from '@core/utils/formatters'
   import Swal from 'sweetalert2'
 
@@ -182,15 +162,12 @@
     },
     async mounted(){
       await this.doGetById(this.$route.params.id)
+      await this.doSearchAllRole()
     },
     data(){
       return {
-        body: {
-          name: '',
-          email: '',
-          status: '',
-          roleId: ''
-        },
+        roles: [],
+        body: [],
         data: [],
         loading: false,
         infoMessage: '',
@@ -204,27 +181,93 @@
     computed: {
     },
     methods: {
-      handleFileUpload(event) {
+      async doSearchAllRole(){
+          this.loading = true
+          let uri = `/api/v1/roles/all`;
+          let responseBody = await api.jsonApi(uri,'GET');
+          console.log("🚀 ~ doSearchAllRole ~ responseBody:", responseBody)
+          if( responseBody.status != 200 ){
+            this.errorMessage = responseBody.message;
+          }else{
+            this.roles = responseBody.data;
+          }
+          this.loading = false
+      },
+      async doUpdate(){
+        Swal.fire({
+          title: "Are you sure?",
+          text: "You want to save this data?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#7367F0",
+          cancelButtonColor: "#EA5455",
+          confirmButtonText: "Yes",
+          cancelButtonText: "Cancel",
+          customClass: {
+            confirmButton: 'confirm-button-text-white',
+            cancelButton: 'confirm-button-text-white'
+          }
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try{
+            this.isFormValid = true
+            let body = {
+              userId: this.body.userId, 
+              roleId: this.body.roleId, 
+              nip: this.body.nip, 
+              name: this.body.name,
+              email: this.body.email,
+              password: this.body.password || "",
+              phone: this.body.phone,
+              photo: this.body.photo_file || "",
+              photo_name: this.body.photo_file != "" ? this.body.photo_name : "",
+              photo_mime_type: this.body.photo_file != "" ? this.body.photo_mime_type : ""
+            }
+            console.log("🚀 ~ doAdd ~ body:", body)
+    
+            let uri = `/api/v1/users`;
+            let responseBody = await api.jsonApi(uri, 'PUT', JSON.stringify(body));
+            console.log("🚀 ~ doUpdate ~ responseBody:", responseBody)
+            if( responseBody.status != 200 ){
+              let msg = Array.isArray(responseBody.message) ? responseBody.message.toString() : responseBody.message;
+              Swal.fire('Error!', msg, 'error')
+            }else{
+              await this.doGetById(this.$route.params.id)
+              Swal.fire('Success!', responseBody.message, 'success')
+            }
+            this.loading = false
+          }catch(error){
+            Swal.fire('Error!', error, 'error')
+          }
+        }
+      })
+      },
+      resetForm(){
+        this.body = {...this.data}
+        this.body.photo = ''
+        this.body.password = ''
+        this.body.roleId = this.data.role_id
+      },
+      async handleFileUpload(event) {
         const file = event.target.files[0];
+        if(file.size > 1048576){
+          return Swal.fire('Error!', 'Max file size 1 MB', 'error')
+        }
         console.log("🚀 ~ handleFileUpload ~ file:", file)
-        if (file) {
+        const base_64 = await utils.encodeFileToBase64(file)
+        if (file && base_64) {
           const reader = new FileReader();
           reader.onload = (e) => {
-            this.body.photo = e.target.result; // Display the selected image
-            console.log("🚀 ~ handleFileUpload ~ this.body:", this.body)
+            this.body.photo = e.target.result;
+  
+            let plain = base_64.split(",")
+            this.body.photo_file = plain[1]
+            this.body.photo_name = file.name
+            this.body.photo_mime_type = file.type
+            console.log({a: plain[1], b: file.name, c: file.type})
           };
           reader.readAsDataURL(file);
         }
-      },
-      changeImage(){
-        if(!this.isEdit){
-          return
-        }
-        this.$refs.fileInput.click();
-      },
-      editForm(){
-        this.body = {...this.data}
-        this.isEdit = !this.isEdit
       },
       async doGetById(user_id){
           this.loading = true
@@ -238,6 +281,12 @@
             this.errorMessage = responseBody.message;
           }else{
             this.data = responseBody.data
+            this.body = {...this.data}
+            this.body.userId = this.$route.params.id
+            this.body.roleId = responseBody.data.role_id
+            this.body.photo = ''
+            this.body.password = ''
+            console.log("🚀 ~ doGetById ~ this.body:", this.body)
             if(responseBody.data.length<=0){
                 this.infoMessage = ''
                 this.warningMessage = 'Data not found'
@@ -250,37 +299,6 @@
           }
           this.loading = false
       },
-      async doDelete(user_id){
-        Swal.fire({
-          title: "Are you sure?",
-          text: "You won't be able to revert this!",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#7367F0",
-          cancelButtonColor: "#EA5455",
-          confirmButtonText: "Yes, delete it!",
-          customClass: {
-            confirmButton: 'confirm-button-text-white',
-            cancelButton: 'confirm-button-text-white'
-          }
-      }).then(async (result) => {
-          if (result.isConfirmed) {
-            this.loading = true
-            let uri = `/api/v1/users`;
-            let responseBody = await api.jsonApi(uri,'DELETE',JSON.stringify({userId: user_id}));
-            
-            if( responseBody.status != 200 ){
-              this.infoMessage = '';
-              this.warningMessage = '';
-              this.errorMessage = responseBody.message;
-            }else{
-              Swal.fire('Deleted!', responseBody.message, 'success')
-            }
-            this.loading = false
-            this.doSearch(1)
-          }
-        })
-      },
     },
   }
 </script>
@@ -292,5 +310,9 @@
 
 .text-capitalize {
   text-transform: capitalize !important;
+}
+
+.confirm-button-text-white {
+  color: white !important;
 }
 </style>

@@ -17,7 +17,7 @@ class JwtUtil {
     public function generateToken($data, $role_id)
     {
         $issuedAt = time();
-        $expiration = $issuedAt + 3600 * 24; // Token valid for 1 hour
+        $expiration = $issuedAt + (3600 * 24); // Token valid for 1 hour
 
         $payload = [
             'iss' => $role_id, // Issuer
