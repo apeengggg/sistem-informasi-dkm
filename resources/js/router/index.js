@@ -9,7 +9,7 @@ const router = createRouter({
     {
       path: '/',
       redirect: to => {
-        return { name: 'dashboards-analytics' }
+        return { name: 'apps-login' }
       }
     },
     {
