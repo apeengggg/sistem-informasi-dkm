@@ -228,7 +228,7 @@ import {
                   style="width: 5rem;"
                 >
                   <RouterLink
-                    :to="{ name: 'masters-users-id', params: { id: user.user_id } }"
+                    :to="{ name: 'apps-masters-users-id', params: { id: user.user_id } }"
                     class="font-weight-medium user-list-name"
                   >
                     <VBtn

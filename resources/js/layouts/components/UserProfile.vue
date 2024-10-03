@@ -6,6 +6,7 @@ const router = useRouter()
 const ability = useAppAbility()
 const userData = JSON.parse(localStorage.getItem('user_data') || 'null')
 console.log("🚀 ~ userData:", userData)
+const user_data = JSON.parse(localStorage.getItem("user_data"))
 
 const logout = () => {
 
@@ -17,10 +18,7 @@ const logout = () => {
   localStorage.removeItem('accessToken')
   localStorage.removeItem('token')
   router.push('/apps/login').then(() => {
-
     // Remove "userAbilities" from localStorage
-    localStorage.removeItem('userAbilities')
-
     // Reset ability to initial ability
     ability.update(initialAbility)
   })
@@ -95,7 +93,7 @@ const logout = () => {
           <VDivider class="my-2" />
 
           <!-- 👉 Profile -->
-          <VListItem :to="{ name: 'apps-user-view-id', params: { id: 21 } }">
+          <VListItem :to="{ name: 'apps-profile-id', params: { id: user_data.user_id } }">
             <template #prepend>
               <VIcon
                 class="me-2"
@@ -108,7 +106,7 @@ const logout = () => {
           </VListItem>
 
           <!-- 👉 Settings -->
-          <VListItem :to="{ name: 'pages-account-settings-tab', params: { tab: 'account' } }">
+          <!-- <VListItem :to="{ name: 'pages-account-settings-tab', params: { tab: 'account' } }">
             <template #prepend>
               <VIcon
                 class="me-2"
@@ -118,10 +116,10 @@ const logout = () => {
             </template>
 
             <VListItemTitle>Settings</VListItemTitle>
-          </VListItem>
+          </VListItem> -->
 
           <!-- 👉 Pricing -->
-          <VListItem :to="{ name: 'pages-pricing' }">
+          <!-- <VListItem :to="{ name: 'pages-pricing' }">
             <template #prepend>
               <VIcon
                 class="me-2"
@@ -131,10 +129,10 @@ const logout = () => {
             </template>
 
             <VListItemTitle>Pricing</VListItemTitle>
-          </VListItem>
+          </VListItem> -->
 
           <!-- 👉 FAQ -->
-          <VListItem :to="{ name: 'pages-faq' }">
+          <!-- <VListItem :to="{ name: 'pages-faq' }">
             <template #prepend>
               <VIcon
                 class="me-2"
@@ -144,7 +142,7 @@ const logout = () => {
             </template>
 
             <VListItemTitle>FAQ</VListItemTitle>
-          </VListItem>
+          </VListItem> -->
 
           <!-- Divider -->
           <VDivider class="my-2" />
