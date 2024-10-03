@@ -191,12 +191,7 @@ import {
 
                     <div class="d-flex flex-column">
                       <h6 class="text-base">
-                        <RouterLink
-                          :to="{ name: 'apps-user-view-id', params: { id: user.user_id } }"
-                          class="font-weight-medium user-list-name"
-                        >
-                          {{ user.name }}
-                        </RouterLink>
+                        {{ user.name }}
                       </h6>
                       <span class="text-sm text-disabled">{{ user.email }}</span>
                     </div>
