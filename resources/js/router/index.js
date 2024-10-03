@@ -52,7 +52,6 @@ function isAuthenticated() {
 // Docs: https://router.vuejs.org/guide/advanced/navigation-guards.html#global-before-guards
 router.beforeEach((to, from, next) => {
   console.log("🚀 ~ router.beforeEach ~ to:", to)
-  // console.log('env', import.meta.env.VITE_JWT_SECRET)
   if (to.meta.requiresLogin && !isAuthenticated()) {
     // If not authenticated, redirect to login page
     return next({ name: 'apps-login'})

@@ -1,15 +1,18 @@
 <script setup>
-const userListStore = useUserListStore()
-const searchQuery = ref('')
-
-const addNewUser = userData => {
-  userListStore.addUser(userData)
-
-  // refetch User
-  fetchUsers()
-}
+import {
+    alphaDashValidator,
+    alphaValidator,
+    betweenValidator,
+    confirmedValidator,
+    emailValidator,
+    integerValidator,
+    lengthValidator,
+    passwordValidator,
+    regexValidator,
+    requiredValidator,
+    urlValidator,
+  } from '@validators'
 </script>
-
 <template>
   <section>
     <VRow>
@@ -136,7 +139,7 @@ const addNewUser = userData => {
               <!-- 👉 Add user button -->
               <VBtn
                 prepend-icon="tabler-plus"
-                @click="this.isAddNewUserDrawerVisible = true"
+                @click="openDrawer()"
               >
                 Add New User
               </VBtn>
@@ -317,24 +320,136 @@ const addNewUser = userData => {
       </VCol>
     </VRow>
 
-    <!-- 👉 Add New User -->
-    <AddNewUserDrawer
-      v-model:isDrawerOpen="this.isAddNewUserDrawerVisible"
-      @user-data="addNewUser"
-    />
+    <VNavigationDrawer
+      :width="400"
+      location="end"
+      class="scrollable-content"
+      v-if="isAddNewUserDrawerVisible"
+    >
+      <div class="d-flex align-center pa-6 pb-1">
+        <h6 class="text-h6">
+          Add User
+        </h6>
+        <VSpacer />
+        <VBtn
+          variant="tonal"
+          color="default"
+          icon
+          size="32"
+          class="rounded"
+          @click="this.isAddNewUserDrawerVisible = !this.isAddNewUserDrawerVisible"
+        >
+          <VIcon
+            size="18"
+            icon="tabler-x"
+          />
+        </VBTn>
+      </div>
+      <PerfectScrollbar :options="{ wheelPropagation: false }">
+        <VCard flat>
+          <VCardText>
+            <VRow>
+                <VCol cols="12">
+                  <VTextField
+                    v-model="body.name"
+                    :rules="[requiredValidator]"
+                    label="Nama"
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VTextField
+                    v-model="body.nip"
+                    :rules="[requiredValidator]"
+                    label="NIP"
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VSelect
+                    v-model="body.roleId"
+                    label="Pilih Role"
+                    :rules="[requiredValidator]"
+                    :items="roles"
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VTextField
+                    v-model="body.email"
+                    :rules="[requiredValidator, emailValidator]"
+                    label="Email"
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VTextField
+                    v-model="body.phone"
+                    :rules="[requiredValidator]"
+                    label="No Telepon"
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VTextField
+                  v-model="body.password"
+                  :append-inner-icon="isShowPassword ? 'tabler-eye' : 'tabler-eye-off'"
+                  :rules="[requiredValidator, lengthValidator(specifiedLength, 4)]"
+                  :type="isShowPassword ? 'text' : 'password'"
+                  label="Password"
+                  @click:append-inner="isShowPassword = !isShowPassword"
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VTextField
+                  v-model="body.confirmation_password"
+                  :append-inner-icon="isShowPassword ? 'tabler-eye' : 'tabler-eye-off'"
+                  :rules="[requiredValidator, lengthValidator(specifiedLength, 4)]"
+                  :type="isShowPassword ? 'text' : 'password'"
+                  label="Confirmation Password"
+                  @click:append-inner="isShowPassword = !isShowPassword"
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VFileInput
+                    accept="image/jpeg, image/jpg, image/png"
+                    label="Foto"
+                    v-model="body.photo"
+                    v-on:change="handleFileChange($event)"
+                    :rules=[requiredValidator]
+                  />
+                </VCol>
+                <VCol cols="12">
+                  <VBtn
+                    class="me-3"
+                    @click="doAdd()"
+                  >
+                    Submit
+                  </VBtn>
+                  <VBtn
+                    type="reset"
+                    variant="tonal"
+                    color="secondary"
+                    @click="this.isAddNewUserDrawerVisible = !this.isAddNewUserDrawerVisible"
+                  >
+                    Cancel
+                  </VBtn>
+                </VCol>
+              </VRow>
+          </VCardText>
+        </VCard>
+      </PerfectScrollbar>
+    </VNavigationDrawer>
   </section>
 </template>
 
 <script>
   import api from "@/apis/CommonAPI"
-  import AddNewUserDrawer from '@/views/apps/user/list/AddNewUserDrawer.vue'
+  import utils from "@/utils/CommonUtils"
+  import AddNewUser from '@/views/apps/masters/user/AddNewUser.vue'
   import { useUserListStore } from '@/views/apps/user/useUserListStore'
   import { avatarText } from '@core/utils/formatters'
   import Swal from 'sweetalert2'
+  
 
   export default {
     components: {
-      
+      AddNewUser
     },
     mounted(){
       this.doSearch(1)
@@ -342,10 +457,24 @@ const addNewUser = userData => {
     },
     data(){
       return {
+        isFormValid: true,
+        isShowPassword: false,
         param_query: {
           name: '',
           email: '',
           roleId: ''
+        },
+        body: {
+          roleId: '',
+          name:'',
+          email: '',
+          phone: '',
+          password: '',
+          confirmation_password: '',
+          photo: '',
+          photo_file: '',
+          photo_name: '',
+          photo_mime_type: '',
         },
         selectedStatus: 1,
         loading: false,
@@ -421,6 +550,67 @@ const addNewUser = userData => {
       }
     },
     methods: {
+      openDrawer(){
+        this.isAddNewUserDrawerVisible = true
+        console.log('opened', this.isAddNewUserDrawerVisible)
+      },
+      async handleFileChange(e){
+        const file = e.target.files[0]
+        console.log("🚀 ~ handleFileChange ~ e:", e.target.files[0])
+        try{
+          const base_64 = await utils.encodeFileToBase64(file)
+          if(base_64){
+            let plain = base_64.split(",")
+            console.log("🚀 ~ handleFileChange ~ base_64:", plain[1])
+            this.body.photo_file = plain[1]
+            this.body.photo_name = file.name
+            this.body.photo_mime_type = file.type
+          }
+        }catch(error){
+          this.body.photo = ''
+          this.body.photo_file = ''
+          this.body.photo_name = ''
+          this.body.photo_mime_type = ''
+          Swal.fire('Error!', error, 'error')
+        }
+      },
+      async doAdd(){
+        try{
+          this.isFormValid = true
+          let body = {
+            roleId: this.body.roleId, 
+            nip: this.body.nip, 
+            name: this.body.name,
+            email: this.body.email,
+            password: this.body.password,
+            phone: this.body.phone,
+            photo: this.body.photo_file,
+            photo_name: this.body.photo_name,
+            photo_mime_type: this.body.photo_mime_type
+          }
+          console.log("🚀 ~ doAdd ~ body:", body)
+  
+          if(this.body.password != this.body.confirmation_password){
+            this.isFormValid = false
+            return Swal.fire('Error!', 'Password Tidak Sama Dengan Confirmation Password', 'error')
+          }
+          let uri = `/api/v1/users`;
+          let responseBody = await api.jsonApi(uri, 'POST', JSON.stringify(body));
+          console.log("🚀 ~ doAdd ~ responseBody:", responseBody)
+          // if( responseBody.status != 200 ){
+          //   let msg = Array.isArray(responseBody.message) ? responseBody.message.toString() : responseBody.message;
+          //   Swal.fire('Error!', msg, 'error')
+          //   alert(JSON.stringify(responseBody))
+          // }else{
+          //   Swal.fire('Success!', responseBody.message, 'success')
+          //   alert(JSON.stringify(responseBody))
+          // }
+          // this.loading = false
+        }catch(error){
+          alert(error)
+          console.error(error)
+        }
+      },
       async doSearch(page){
           this.loading = true
           let param = `orderBy=${this.orderBy}&dir=${this.dir}&perPage=${this.page.pageSize}&page=${page}&status=${this.selectedStatus == null ? 1 : this.selectedStatus}`

@@ -425,5 +425,21 @@ export default {
         n_callback()
       }
     })
-  }
+  },
+  encodeFileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onloadend = () => {
+            const base64String = reader.result;
+            resolve(base64String);
+        };
+
+        reader.onerror = (error) => {
+            reject(error);
+        };
+
+        reader.readAsDataURL(file); // This method reads the file as a data URL (Base64)
+    });
+}
 }

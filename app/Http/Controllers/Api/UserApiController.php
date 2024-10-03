@@ -118,7 +118,7 @@ class UserApiController extends Controller
                 'email' => 'max:100|email|required',
                 'phone' => 'max:12|string|required',
                 'password' => 'min:4|string|required',
-                'photo' => 'file|mimes:jpg,jpeg,png|max:1024',
+                'photo' => 'required|string',
             ],[
                 'roleId.max' => 'Role Id Maximal 1 Character',
                 'roleId.string' => 'Role Id Must Be String',
@@ -137,28 +137,36 @@ class UserApiController extends Controller
                 'phone.required' => 'Phone Is Required',
                 'password.max' => 'Password Minimal 15 Character',
                 'password.string' => 'Password Must Be A String',
-                'photo.file' => 'Photo Must Be A File',
-                'photo.mimes' => 'Photo Is Must A Valid Mime Type (jpeg, jpg, or png)',
-                'photo.max' => 'Photo Maximal 1 MB',
+                'photo.required' => 'Photo Is Required',
+                'photo.string' => 'Photo Must Be A String',
             ]);
 
             if ($validator->fails()) {
                 $errorMessages = StringUtil::ErrorMessage($validator);
                 return ResponseUtil::BadRequest($errorMessages);
             }
-
-            // dd($request->all());
-
-            // dd($request->hasFile('photo'));
-            if($request->hasFile('photo')){
-                try{
-                    $file = $request->file('photo');
-                    $fileName = $user_id . "_" . $file->getClientOriginalName();
-                    $path = $file->storeAs('foto-profile', $fileName, 'public');
-                }catch(\Exception $e){
-                    dd($e);
-                }
+            
+            $mime_type = ['image/jpeg', 'image/jpg', 'image/png'];
+            if(!in_array($request->photo_mime_type, $mime_type)){
+                return ResponseUtil::BadRequest('File not allowed');
             }
+
+            // Decode the Base64 string
+            $files = base64_decode($request->photo, true);
+
+            // Check for decoding errors
+            if ($files === false) {
+                return ResponseUtil::InternalServerError('Decoding base64 failed');
+            }
+
+            $fileSize = strlen($files);
+
+            if($fileSize > 1048576){
+                return ResponseUtil::BadRequest('File size more than 1MB');
+            }
+
+            $fileName = $user_id . "_" . $request->photo_name;
+            Storage::put("public/foto-profile/{$fileName}", $files);
             
             $path = 'foto-profile/'.$fileName;
 
@@ -167,15 +175,15 @@ class UserApiController extends Controller
                 return ResponseUtil::BadRequest('Phone Number is Not Valid');
             }
 
-            // $validateEmailPhoneNip = MUsers::getUserFromEmailPhoneNip($request->email, $request->phone, $request->nip);
-            // if($validateEmailPhoneNip){
-            //     return ResponseUtil::BadRequest('Bad Request');
-            // }
+            $validateEmailPhoneNip = MUsers::getUserFromEmailPhoneNip($request->email, $request->phone, $request->nip);
+            if($validateEmailPhoneNip){
+                return ResponseUtil::BadRequest('Bad Request');
+            }
 
-            // $validateRoleId = MUsers::getRoleFromRoleId($request->role_id);
-            // if($validateRoleId){
-            //     return ResponseUtil::BadRequest('Bad Request');
-            // }
+            $validateRoleId = MUsers::getRoleFromRoleId($request->role_id);
+            if($validateRoleId){
+                return ResponseUtil::BadRequest('Bad Request');
+            }
             
 
             $data = [
@@ -195,6 +203,7 @@ class UserApiController extends Controller
             
             return ResponseUtil::Ok('Successfully created', null);
         }catch(\Exception $e){
+            dd($e);
             return ResponseUtil::InternalServerError($e);
         }
     }
