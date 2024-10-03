@@ -5,7 +5,6 @@ import {
   HorizontalNavPopper,
 } from '@layouts/components'
 import { config } from '@layouts/config'
-import { canViewNavMenuGroup } from '@layouts/plugins/casl'
 import { isNavGroupActive } from '@layouts/utils'
 
 const props = defineProps({
@@ -41,7 +40,6 @@ watch(() => route.path, () => {
 
 <template>
   <HorizontalNavPopper
-    v-if="canViewNavMenuGroup(item)"
     :is-rtl="isAppRtl"
     class="nav-group"
     tag="li"

@@ -1,9 +1,5 @@
 <script setup>
-import { initialAbility } from '@/plugins/casl/ability'
-import { useAppAbility } from '@/plugins/casl/useAppAbility'
-
 const router = useRouter()
-const ability = useAppAbility()
 const userData = JSON.parse(localStorage.getItem('user_data') || 'null')
 console.log("🚀 ~ userData:", userData)
 const user_data = JSON.parse(localStorage.getItem("user_data"))
@@ -18,9 +14,6 @@ const logout = () => {
   localStorage.removeItem('accessToken')
   localStorage.removeItem('token')
   router.push('/apps/login').then(() => {
-    // Remove "userAbilities" from localStorage
-    // Reset ability to initial ability
-    ability.update(initialAbility)
   })
 }
 </script>

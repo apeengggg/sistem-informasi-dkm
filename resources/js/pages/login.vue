@@ -1,6 +1,5 @@
 <script setup>
 import { VForm } from 'vuetify/components'
-import { useAppAbility } from '@/plugins/casl/useAppAbility'
 import AuthProvider from '@/views/pages/authentication/AuthProvider.vue'
 import axios from '@axios'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
@@ -22,7 +21,6 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 const isPasswordVisible = ref(false)
 const route = useRoute()
 const router = useRouter()
-const ability = useAppAbility()
 
 const errors = ref({
   email: undefined,
@@ -42,7 +40,6 @@ const login = () => {
     const { accessToken, userData, userAbilities } = r.data
 
     localStorage.setItem('userAbilities', JSON.stringify(userAbilities))
-    ability.update(userAbilities)
     localStorage.setItem('userData', JSON.stringify(userData))
     localStorage.setItem('accessToken', JSON.stringify(accessToken))
 

@@ -8,7 +8,6 @@ import {
   VerticalNavLink,
 } from '@layouts/components'
 import { config } from '@layouts/config'
-import { canViewNavMenuGroup } from '@layouts/plugins/casl'
 import {
   isNavGroupActive,
   openGroups,
@@ -99,7 +98,6 @@ watch(isVerticalNavMini(windowWidth, isVerticalNavHovered), val => {
 
 <template>
   <li
-    v-if="canViewNavMenuGroup(item)"
     class="nav-group"
     :class="[
       {

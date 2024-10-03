@@ -6,7 +6,6 @@ import authV2RegisterIllustrationDark from '@images/pages/auth-v2-register-illus
 import authV2RegisterIllustrationLight from '@images/pages/auth-v2-register-illustration-light.png'
 import authV2MaskDark from '@images/pages/misc-mask-dark.png'
 import authV2MaskLight from '@images/pages/misc-mask-light.png'
-import { useAppAbility } from '@/plugins/casl/useAppAbility'
 import AuthProvider from '@/views/pages/authentication/AuthProvider.vue'
 import axios from '@axios'
 import { useGenerateImageVariant } from '@core/composable/useGenerateImageVariant'
@@ -28,9 +27,6 @@ const privacyPolicies = ref(true)
 const route = useRoute()
 const router = useRouter()
 
-// Ability
-const ability = useAppAbility()
-
 // Form Errors
 const errors = ref({
   email: undefined,
@@ -46,7 +42,6 @@ const register = () => {
     const { accessToken, userData, userAbilities } = r.data
 
     localStorage.setItem('userAbilities', JSON.stringify(userAbilities))
-    ability.update(userAbilities)
     localStorage.setItem('userData', JSON.stringify(userData))
     localStorage.setItem('accessToken', JSON.stringify(accessToken))
 
