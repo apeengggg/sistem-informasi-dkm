@@ -128,17 +128,23 @@ const authThemeMask = useGenerateImageVariant(authV2MaskLight, authV2MaskDark)
 // import
 import api from "@/apis/CommonAPI"
 import Swal from 'sweetalert2'
+import { useAppAbility } from '@/plugins/casl/useAppAbility'
 
 export default {
   components: {
 
   },
+  created(){
+    this.ability = useAppAbility();
+  },
   mounted(){
     localStorage.removeItem('token')
     localStorage.removeItem('user_data')
+    localStorage.removeItem('userAbilities')
   },
   data(){
     return{
+      ability: '',
       form: {
         email: '',
         password: '',
@@ -167,7 +173,8 @@ export default {
       }else{
         localStorage.setItem('user_data', JSON.stringify(responseBody.data))
         localStorage.setItem('token', responseBody.data.token)
-        this.$router.push('/apps/user/list');
+        this.ability.update([{action: 'manage',subject: 'all'}])
+        this.$router.push('/masters/users');
       }
       this.loading = false
     }
