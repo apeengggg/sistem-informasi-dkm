@@ -26,7 +26,7 @@ class MUsers extends Model
     public static function getUserFromUserId($user_id){
         return DB::table('m_users as u')
         ->join('m_roles as r', 'u.role_id', '=', 'r.role_id')
-        ->select('u.user_id', 'u.name', 'u.email', 'u.password', 'u.role_id', 'r.role_name', 'u.photo')
+        ->select('u.user_id', 'u.name', 'u.email', 'u.password', 'u.role_id', 'r.role_name', 'u.photo', 'u.nip', 'u.phone')
         ->where('u.user_id', $user_id)
         ->first();
     }
@@ -46,6 +46,31 @@ class MUsers extends Model
         ->where('r.role_id', $role_id)
         ->first();
     }
+
+    public static function validateEmailByUserId($user_id, $email){
+        return DB::table('m_users as u')
+        ->select('u.user_id')
+        ->where('u.email', $email)
+        ->where('u.user_id', '<>' , $user_id)
+        ->first();
+    }
+
+    public static function validateNipByUserId($user_id, $nip){
+        return DB::table('m_users as u')
+        ->select('u.user_id')
+        ->where('u.nip', $nip)
+        ->where('u.user_id', '<>' , $user_id)
+        ->first();
+    }
+
+    public static function validatePhoneByUserId($user_id, $phone){
+        return DB::table('m_users as u')
+        ->select('u.user_id')
+        ->where('u.phone', $phone)
+        ->where('u.user_id', '<>' , $user_id)
+        ->first();
+    }
+
 
     public static function deleteUser($user_id, $who){
         return DB::table('m_users as u')->where('user_id', $user_id)

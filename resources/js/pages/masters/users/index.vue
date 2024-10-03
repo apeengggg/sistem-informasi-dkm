@@ -556,12 +556,11 @@ import {
       },
       async handleFileChange(e){
         const file = e.target.files[0]
-        console.log("🚀 ~ handleFileChange ~ e:", e.target.files[0])
+
         try{
           const base_64 = await utils.encodeFileToBase64(file)
           if(base_64){
             let plain = base_64.split(",")
-            console.log("🚀 ~ handleFileChange ~ base_64:", plain[1])
             this.body.photo_file = plain[1]
             this.body.photo_name = file.name
             this.body.photo_mime_type = file.type
@@ -596,19 +595,15 @@ import {
           }
           let uri = `/api/v1/users`;
           let responseBody = await api.jsonApi(uri, 'POST', JSON.stringify(body));
-          console.log("🚀 ~ doAdd ~ responseBody:", responseBody)
-          // if( responseBody.status != 200 ){
-          //   let msg = Array.isArray(responseBody.message) ? responseBody.message.toString() : responseBody.message;
-          //   Swal.fire('Error!', msg, 'error')
-          //   alert(JSON.stringify(responseBody))
-          // }else{
-          //   Swal.fire('Success!', responseBody.message, 'success')
-          //   alert(JSON.stringify(responseBody))
-          // }
-          // this.loading = false
+          if( responseBody.status != 200 ){
+            let msg = Array.isArray(responseBody.message) ? responseBody.message.toString() : responseBody.message;
+            Swal.fire('Error!', msg, 'error')
+          }else{
+            Swal.fire('Success!', responseBody.message, 'success')
+          }
+          this.loading = false
         }catch(error){
-          alert(error)
-          console.error(error)
+          Swal.fire('Error!', error, 'error')
         }
       },
       async doSearch(page){
@@ -755,7 +750,7 @@ import {
       }
     },
   }
-</script>
+</script>Role
 
 <style lang="scss">
 .app-user-search-filter {
