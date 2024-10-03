@@ -7,7 +7,7 @@ export default {
         const request = await axios
             .get(process.env.VUE_APP_API_URL + `/api/common${url}${params}`, {
                 headers: {
-                    Authorization: 'Bearer ' + localStorage.id_token,
+                    Authorization: 'Bearer ' + localStorage.token,
                 },
             })
             .then((response) => {
@@ -28,7 +28,7 @@ export default {
     async get(url, params, callback) {
         let config = {
             headers: { 
-                Authorization: 'Bearer ' + localStorage.id_token,
+                Authorization: 'Bearer ' + localStorage.token,
             },
         }
 
@@ -59,7 +59,7 @@ export default {
         const request = await axios
             .post(process.env.VUE_APP_API_URL + `${url}`, params, {
                 headers: {
-                    Authorization: 'Bearer ' + localStorage.id_token,
+                    Authorization: 'Bearer ' + localStorage.token,
                 },
             })
             .then((response) => {
@@ -81,7 +81,7 @@ export default {
         const request = await axios
             .put(process.env.VUE_APP_API_URL + `${url}/edit/${id}`, params, {
                 headers: {
-                    Authorization: 'Bearer ' + localStorage.id_token,
+                    Authorization: 'Bearer ' + localStorage.token,
                 },
             })
             .then((response) => {
@@ -103,7 +103,7 @@ export default {
         const request = await axios
             .delete(process.env.VUE_APP_API_URL + `${url}/delete/${id}`, {
                 headers: {
-                    Authorization: 'Bearer ' + localStorage.id_token,
+                    Authorization: 'Bearer ' + localStorage.token,
                 },
             })
             .then((response) => {
@@ -126,15 +126,15 @@ export default {
     },
 
     async jsonApi( uri, method, jsonBody){
-        return this.execJsonApi('http://localhost:8000' + uri, method, jsonBody);
+        return this.execJsonApi(import.meta.env.VITE_APP_URL + uri, method, jsonBody);
     },
 
     async etrDownloadApi( uri, method, data){
         return await this.execDownloadApi( process.env.VUE_APP_API_URL + uri, method, data);
     },
 
-    async etrUploadApi( uri, method, formData){
-        return this.execUploadApi( process.env.VUE_APP_API_URL + uri, method, formData);
+    async uploadApi( uri, method, formData){
+        return this.execUploadApi(import.meta.env.VITE_APP_URL + uri, method, formData);
     },
 
     async execJsonApi( uri, method, jsonBody){
@@ -175,7 +175,7 @@ export default {
               method: method, // *GET, POST, PUT, DELETE, etc.
               headers: {
                 'Content-Type': 'application/json',
-                "Authorization": 'Bearer ' + localStorage.id_token,
+                "Authorization": 'Bearer ' + localStorage.token,
               },
               body: data,
           } );
@@ -205,7 +205,7 @@ export default {
           let response = await fetch( uri, {
               method: method, // *GET, POST, PUT, DELETE, etc.
               headers: {
-                "Authorization": 'Bearer ' + localStorage.id_token,
+                "Authorization": 'Bearer ' + localStorage.token,
               },
               body: formData
           });
@@ -222,7 +222,7 @@ export default {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
-                    "Authorization": 'Bearer ' + localStorage.id_token,
+                    "Authorization": 'Bearer ' + localStorage.token,
                 },
                 body: JSON.stringify({
                     userName: process.env.VUE_APP_SC_REFRESH_TOKEN_USERNAME,
@@ -232,13 +232,13 @@ export default {
             let jsonResponse = await response.json();
             console.log('jsonResponse', jsonResponse)
             if(jsonResponse.status==='401'){
-                localStorage.id_token = '';
+                localStorage.token = '';
                 localStorage.tokenId = '';
                 window.location.href=process.env.VUE_APP_CONTAINER_URL;  
                 return;
             }
-            localStorage.setItem('id_token', jsonResponse.id_token)
-            localStorage.setItem('tokenId', jsonResponse.id_token)
+            localStorage.setItem('token', jsonResponse.token)
+            localStorage.setItem('tokenId', jsonResponse.token)
             // await callback()
             return jsonResponse;
             }catch(e){       
